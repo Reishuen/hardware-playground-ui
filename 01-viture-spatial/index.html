@@ -1,0 +1,208 @@
+<meta charset="utf-8">
+<title>VITURE Spatial Brief</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Shared design tokens for the playground UIs. Each project sets --accent itself so
+   the four pages read as one suite while staying individually identifiable. */
+:root{
+  --ground:#eceff3; --surface:#fbfcfd; --surface-2:#f2f5f8; --sunken:#e3e8ee;
+  --ink:#141922; --ink-soft:#3b4653; --ink-mute:#6a7583;
+  --rule:#d1d8e0; --rule-soft:#e2e7ed;
+  --ok:#2f7d5c; --warn:#9c6a10; --crit:#ab4436;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --sunken:#11161d;
+  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
+  --rule:#2a323d; --rule-soft:#212832;
+  --ok:#5fb98d; --warn:#d3a03a; --crit:#e0776a;
+}}
+:root[data-theme="dark"]{
+  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --sunken:#11161d;
+  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
+  --rule:#2a323d; --rule-soft:#212832;
+  --ok:#5fb98d; --warn:#d3a03a; --crit:#e0776a;
+}
+
+:root{ --accent:#6b4fb8; }
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ --accent:#a78bec; }}
+:root[data-theme="dark"]{ --accent:#a78bec; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:30px 60px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-mute)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.6vw,44px);line-height:1.06;
+  margin:.28em 0 0;letter-spacing:-.015em;text-wrap:balance}
+.standfirst{font-family:var(--serif);font-size:clamp(15.5px,1.9vw,18.5px);line-height:1.5;
+  color:var(--ink-soft);max-width:66ch;margin:14px 0 0}
+.standfirst em{font-style:italic;color:var(--ink)}
+h2.sec{font-family:var(--serif);font-size:27px;font-weight:600;margin:44px 0 4px;
+  padding-top:22px;border-top:1px solid var(--rule)}
+.dek{color:var(--ink-mute);max-width:70ch;margin:0 0 18px;font-size:14px}
+
+.buy{margin:26px 0 0;background:var(--surface);border:1px solid var(--accent);
+  border-left:4px solid var(--accent);border-radius:3px;padding:18px 20px;display:grid;gap:8px}
+.buy .bl{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent)}
+.buy b{font-family:var(--serif);font-size:21px;font-weight:600}
+.buy p{margin:0;color:var(--ink-soft);max-width:72ch}
+
+.apps{display:grid;gap:12px}
+.app{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;
+  overflow:hidden}
+.app > button{width:100%;font:inherit;cursor:pointer;text-align:left;background:none;
+  border:0;padding:15px 17px;display:grid;gap:5px;color:inherit;
+  grid-template-columns:30px 1fr auto;align-items:center;column-gap:13px}
+.app > button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.app .num{font-family:var(--mono);font-size:19px;color:var(--ink-mute);
+  font-variant-numeric:tabular-nums;grid-row:span 2}
+.app h3{font-size:16.5px;font-weight:600;margin:0}
+.app .ln{font-size:13.5px;color:var(--ink-mute);grid-column:2}
+.app .chips{display:flex;gap:6px;align-items:center;grid-row:span 2}
+.chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  padding:3px 8px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+.chip.dof{color:var(--crit)} .chip.tag{color:var(--ink-mute)}
+.app .body{padding:0 17px 17px 60px;display:grid;gap:11px;border-top:1px solid var(--rule-soft);
+  margin-top:2px;padding-top:14px}
+.app .body dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-mute);margin-bottom:3px}
+.app .body dd{margin:0 0 9px;color:var(--ink-soft);max-width:74ch}
+.app .body dd:last-child{margin-bottom:0}
+.app .body code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);
+  padding:1px 5px;border-radius:2px}
+
+.fams{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
+.fam{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;
+  border-top:3px solid var(--fc);padding:15px 16px;display:grid;gap:9px;align-content:start}
+.fam.ok{--fc:var(--ok)} .fam.warn{--fc:var(--warn)} .fam.crit{--fc:var(--crit)}
+.fam h3{font-family:var(--serif);font-size:19px;margin:0;font-weight:600}
+.fam .vd{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--fc)}
+.fam p{margin:0;font-size:13.5px;color:var(--ink-soft)}
+.fam .fix{border-left:2px solid var(--fc);padding-left:11px;font-size:13.5px;color:var(--ink-soft)}
+.fam .bud{font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  padding-top:7px;border-top:1px solid var(--rule-soft)}
+
+.tblwrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+th{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-mute);font-weight:400}
+td.g{font-family:var(--mono);font-size:11.5px;color:var(--accent);white-space:nowrap}
+td.sig{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+tbody tr:last-child td{border-bottom:0}
+footer{margin-top:44px;padding-top:19px;border-top:1px solid var(--rule);font-size:12.5px;
+  color:var(--ink-mute);display:grid;gap:8px;max-width:80ch}
+footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">hardware-playground &middot; project 01 &middot; VITURE XR</div>
+  <h1>VITURE Spatial Brief</h1>
+  <p class="standfirst">Four hand-gesture apps, and the research that decides which
+  glasses to buy and what order to build in. This is a <em>design brief, not a
+  prototype</em> &mdash; nothing here has run on hardware yet, because the cheap tests
+  come first.</p>
+</header>
+
+<div class="buy">
+  <div class="bl">Hardware verdict</div>
+  <b>Luma Ultra + Pro Neckband. Not Luma Pro.</b>
+  <p>The Unity XR SDK runs <strong>only on the Pro Neckband</strong> &mdash; the neckband
+  is the compute unit, so no neckband means no SDK means no app. 3DoF head tracking is
+  on the whole lineup; <strong>6DoF requires Luma Ultra</strong>, the only model with the
+  RGB plus dual grayscale depth cameras. <strong>All four apps need 6DoF</strong>, so
+  Luma Pro plus a neckband would leave you with none of them. Under 3DoF, world-locked
+  objects swim with your head as you translate &mdash; the most immersion-killing failure
+  mode in XR, and unfixable in software.</p>
+  <p><em>But don't buy yet.</em> Every app's core risk is testable for free in a browser
+  first. The cheapest high-value test is the orchestra's per-seat binaural mix, which
+  needs no glasses and no hand tracking, and it gates the most expensive app.</p>
+</div>
+
+<h2 class="sec">The four apps</h2>
+<p class="dek">Ranked by whether you will still be using them in a month. Click any app
+for the finding that shapes its build.</p>
+<div class="apps" id="apps"></div>
+
+<h2 class="sec">Instrument families are three different problems</h2>
+<p class="dek">Not variations &mdash; three genuinely different control problems, ranked by
+how well hand tracking can serve them. This is the analysis that decides what the
+orchestra app actually ships.</p>
+<div class="fams" id="fams"></div>
+
+<h2 class="sec">One gesture grammar, six primitives</h2>
+<p class="dek">Six is the budget. Every additional gesture costs recognition reliability,
+because the tracker confuses neighbouring poses, and costs the user memory. If an app
+needs a seventh interaction, it becomes a <strong>mode</strong>, not a gesture &mdash;
+which is exactly what playing an instrument is.</p>
+<div class="tblwrap"><table id="grammar"></table></div>
+
+<footer>
+  <div><strong>Three rules that decide whether this feels good at all.</strong>
+  Every continuous gesture needs a visible proxy rendered <em>at the pinch</em>, not a
+  cursor elsewhere &mdash; with no haptics, visual feedback is the only channel, and this
+  one detail is most of the difference between magic and broken. Discrete gestures need a
+  ~250 ms commit animation with a cancel window, or a stray fist destroys work. And the
+  latency budget is <strong>50 ms, except percussion at 20 ms</strong> &mdash; measure it
+  on day one, it is the single number that decides which apps survive.</div>
+  <div>SDK: <a href="https://developer.viture.com/unity/overview">developer.viture.com/unity</a>
+  &middot; <a href="https://www.viture.com/product/viture-luma-ultra-xr-glasses">Luma Ultra spec</a>.
+  Full notes: <code>01-viture-spatial/docs/</code></div>
+</footer>
+</div>
+
+<script>
+const APPS = [{"id": "orchestra", "name": "Virtual Orchestra", "tag": "reworked", "line": "Zip into any player's first-person seat and play their instrument.", "sixdof": true, "why6": "your hands must hit a world-locked drum head or keypad; under 3DoF leaning in moves the instrument, not your hand", "real": "The per-seat <em>mix</em> is the product, not the instrument simulation. Orchestral players hear a completely different piece from where they sit, and a conductor's-podium mix is on every recording ever made while the second bassoon's chair is on none of them.", "first": "Seat teleport with per-seat mix, listening only. No hand tracking. Already worth using.", "risk": "Needs multitrack per-desk orchestral stems. That is a licensing problem, not an engineering one, and it is not cheap.", "rank": 1}, {"id": "aircad", "name": "Air-CAD / Air-painting", "tag": "lowest risk", "line": "Project a CAD model into the room; carve, slice and section it with your hands.", "sixdof": true, "why6": "you inspect a model by moving your head through and around it", "real": "Represent the model as a <strong>signed distance field, not a mesh</strong>. Carving becomes <code>max(d, -brush)</code> and slicing becomes a shader clip &mdash; one line each, instead of runtime CSG booleans that commercial CAD kernels get wrong.", "first": "Air-painting. Same app with the operator flipped to <code>min</code>, additive, and no model to load &mdash; so no dependency on project 04.", "risk": "256&sup3; field is 32 MB and gives ~4 mm voxels on a 1 m model. Thin features vanish; keep a mesh alongside for display.", "rank": 2}, {"id": "couture", "name": "Couture Workshop", "tag": "craft depth", "line": "A dummy you walk around; cut, drape and pin real fabric onto it.", "sixdof": true, "why6": "the whole interaction is walking around a dummy to see the drape", "real": "Draping is easy &mdash; XPBD at 2&ndash;5k particles runs fine on mobile. <strong>Cutting is the hard part</strong>, because it means topology change at runtime. Grid-aligned cuts sidestep it entirely: a cut just deletes distance constraints, so the solver never sees a topology change.", "first": "One static panel draped over the dummy, then fabric presets with bias asymmetry. Stop there if the drape does not feel good.", "risk": "Grid cuts quantise to ~1.6 cm at a 60&times;60 grid &mdash; pinking shears, not a scalpel. Charming or cheap is a taste call, testable with a mouse.", "rank": 3}, {"id": "dj", "name": "Virtual DJ Deck", "tag": "highest risk", "line": "Two world-locked decks, plus a crowd that reacts to what you play.", "sixdof": true, "why6": "decks must hold position when you lean in to nudge a platter", "real": "The core risk is hardware-independent: <strong>can you beat-match with no haptics?</strong> No platter friction, no detent, no weight. No amount of engineering supplies the missing force feedback.", "first": "The browser prototype, before committing anything. This is the one most likely to fail on a question the glasses cannot answer.", "risk": "If the latency budget lands over 50 ms this app is dead outright.", "rank": 4}], FAMS = [{"name": "Percussion", "verdict": "works", "cls": "ok", "body": "The only family where hand tracking is genuinely <em>sufficient</em>. A strike is a downward velocity peak crossing the drum-head plane &mdash; position and velocity are exactly what tracking gives you. <strong>Velocity maps to loudness</strong>, which is how real percussion works, so dynamics come free and feel right. Position across the head gives timbre.", "missing": "No rebound, so rolls and buzz-rolls are out. Single strokes, mallets, timpani, cymbals and the auxiliary kit are all in.", "budget": "under 20 ms"}, {"name": "Woodwinds", "verdict": "works &mdash; via the microphone", "cls": "warn", "body": "Fingering is <strong>discrete</strong> &mdash; a key is open or closed, a binary state per finger, which is what skeletal tracking is reliable at. Breath is the problem: real dynamics, articulation and attack all come from breath pressure and embouchure, and the glasses see neither.", "missing": "<strong>The fix is to blow into the microphone.</strong> A low-frequency-weighted amplitude envelope with a noise gate gives a usable continuous pressure signal at low latency, and tonguing shows up as a sharp transient &mdash; so you get articulation too. This turns woodwinds from unplayable into the <em>most expressive</em> family, and it needs no gesture vocabulary at all. You just blow.", "budget": "50 ms (a sustained tone hides latency)"}, {"name": "Bowed strings", "verdict": "violin is not buildable", "cls": "crit", "body": "Two independent blockers. <strong>Pitch precision:</strong> a semitone on a violin E string is ~18 mm near the nut and ~6 mm in high positions, against a hand-tracking noise floor of 5&ndash;10 mm &mdash; the tracking error is the size of the interval. <strong>Bow contact:</strong> tone is a continuous function of speed, pressure and distance from the bridge, with no force feedback available.", "missing": "Three honest options: <strong>pitch-snap the fingerboard</strong> so finger position picks a scale degree (always in tune, genuinely playable); <strong>use plucked strings</strong> &mdash; harp and pizzicato only need you to hit the right string, not stop it precisely; or <strong>make it a cello</strong>, where the intervals are bigger. An out-of-tune violin is not a fun toy, it is an unpleasant one.", "budget": "50 ms"}], GRAMMAR = [["PINCH", "thumb tip ↔ index tip < 25 mm", "select a seat", "grab fader", "pin fabric", "grab &amp; move model"], ["PALM_PUSH", "palm normal · palm velocity", "exit a seat", "kill an EQ band", "smooth a drape", "push a section plane"], ["SPREAD", "inter-hand distance", "widen the ensemble", "crossfade A↔B", "stretch on the bias", "scale model"], ["TRACE", "index tip position stream", "bow / strum path", "scratch the platter", "<strong>cut line</strong>", "<strong>carve path</strong>"], ["FIST", "mean finger curl angle", "hold / fermata", "cue point", "bunch / gather", "boolean subtract"], ["POINT_DWELL", "tip velocity below threshold", "select a player", "select a deck", "select a panel", "select a face"]];
+let open = "orchestra";
+
+function renderApps(){
+  document.getElementById("apps").innerHTML = APPS.map((a,i) => `
+    <article class="app">
+      <button aria-expanded="${open===a.id}" data-id="${a.id}">
+        <span class="num">${a.rank}</span>
+        <h3>${a.name}</h3>
+        <span class="chips">
+          <span class="chip tag">${a.tag}</span>
+          <span class="chip dof">6DoF</span>
+        </span>
+        <span class="ln">${a.line}</span>
+      </button>
+      ${open===a.id ? `<dl class="body">
+        <div><dt>The finding that shapes it</dt><dd>${a.real}</dd></div>
+        <div><dt>Build this first</dt><dd>${a.first}</dd></div>
+        <div><dt>Why it needs 6DoF</dt><dd>${a.why6}</dd></div>
+        <div><dt>Main risk</dt><dd>${a.risk}</dd></div>
+      </dl>` : ""}
+    </article>`).join("");
+  document.querySelectorAll(".app > button").forEach(b =>
+    b.addEventListener("click", () => {
+      open = open === b.dataset.id ? "" : b.dataset.id; renderApps();
+    }));
+}
+
+document.getElementById("fams").innerHTML = FAMS.map(f => `
+  <div class="fam ${f.cls}">
+    <div class="vd">${f.verdict}</div>
+    <h3>${f.name}</h3>
+    <p>${f.body}</p>
+    <div class="fix">${f.missing}</div>
+    <div class="bud">latency budget &mdash; ${f.budget}</div>
+  </div>`).join("");
+
+document.getElementById("grammar").innerHTML =
+  `<thead><tr><th>Primitive</th><th>Detection signal</th><th>Orchestra</th>
+    <th>DJ deck</th><th>Couture</th><th>Air-CAD</th></tr></thead><tbody>` +
+  GRAMMAR.map(r => `<tr><td class="g">${r[0]}</td><td class="sig">${r[1]}</td>
+    <td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join("") +
+  `</tbody>`;
+
+renderApps();
+</script>

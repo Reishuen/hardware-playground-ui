@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>hardware-playground</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--ground:#eceff3;--surface:#fbfcfd;--ink:#141922;--ink-soft:#3b4653;--ink-mute:#6a7583;--rule:#d1d8e0;--accent:#2e6c99;
+ --serif:"Spectral",Georgia,serif;--sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--ground:#0d1117;--surface:#161b23;--ink:#e8ecf1;--ink-soft:#b0bac6;--ink-mute:#7b8896;--rule:#2a323d;--accent:#68a8d6}}
+*{box-sizing:border-box}body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding-inline:20px;padding-block:40px 60px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mute)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.6vw,44px);margin:.25em 0 0;line-height:1.06}
+p.lede{font-family:var(--serif);color:var(--ink-soft);max-width:60ch;margin:14px 0 26px;font-size:17px}
+ol{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+a.card{display:grid;grid-template-columns:2.6em 1fr;gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;color:inherit;text-decoration:none}
+a.card:hover{border-color:var(--accent)} a.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a.card .n{font-family:var(--mono);font-size:12px;color:var(--ink-mute)}
+a.card b{font-family:var(--serif);font-size:19px;font-weight:600;display:block}
+a.card span{color:var(--ink-soft);font-size:13.5px}
+footer{margin-top:34px;font-size:12.5px;color:var(--ink-mute)} footer a{color:var(--accent)}
+</style></head><body><div class="wrap">
+<div class="eyebrow">hardware-playground · live UIs</div>
+<h1>Five explorations, five pages</h1>
+<p class="lede">Each page is a standalone build from the <code>hardware-playground</code> repo. They open here without an account; the code, docs and data live in the repo.</p>
+<ol>
+<li><a class="card" href="01-viture-spatial/"><span class="n">01</span><div><b>VITURE Spatial Brief</b><span>four hand-gesture apps, the hardware verdict, and which instrument families are actually playable</span></div></a></li>
+<li><a class="card" href="02-flywire-connectome/"><span class="n">02</span><div><b>Connectome Control Room</b><span>four Drosophila-connectome demos on one harness, with measured firing rates</span></div></a></li>
+<li><a class="card" href="03-opentrons-replication/"><span class="n">03</span><div><b>OT-2 Parts Trainer</b><span>Opentrons' reference model in 3D, the deck at 1:1, every BOM row provenance-tagged, and the materials-synthesis rig to build instead</span></div></a></li>
+<li><a class="card" href="04-astra-cad/"><span class="n">04</span><div><b>Astra CAD Cost Model</b><span>drag iterations, context and views and watch the 272k cliff get crossed</span></div></a></li>
+<li><a class="card" href="05-analogy-graph/"><span class="n">05</span><div><b>Analogy Constellations</b><span>cross-domain analogy graphs, one seed per hard-science domain, three models side by side</span></div></a></li>
+</ol>
+<footer>Built pages only. Source: <a href="https://github.com/Reishuen/hardware-playground">github.com/Reishuen/hardware-playground</a> (private).</footer>
+</div></body></html>

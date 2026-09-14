@@ -1,0 +1,217 @@
+<meta charset="utf-8">
+<title>Connectome Control Room</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Shared design tokens for the playground UIs. Each project sets --accent itself so
+   the four pages read as one suite while staying individually identifiable. */
+:root{
+  --ground:#eceff3; --surface:#fbfcfd; --surface-2:#f2f5f8; --sunken:#e3e8ee;
+  --ink:#141922; --ink-soft:#3b4653; --ink-mute:#6a7583;
+  --rule:#d1d8e0; --rule-soft:#e2e7ed;
+  --ok:#2f7d5c; --warn:#9c6a10; --crit:#ab4436;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --sunken:#11161d;
+  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
+  --rule:#2a323d; --rule-soft:#212832;
+  --ok:#5fb98d; --warn:#d3a03a; --crit:#e0776a;
+}}
+:root[data-theme="dark"]{
+  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --sunken:#11161d;
+  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
+  --rule:#2a323d; --rule-soft:#212832;
+  --ok:#5fb98d; --warn:#d3a03a; --crit:#e0776a;
+}
+
+:root{ --accent:#2f7d5c; }
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ --accent:#5fb98d; }}
+:root[data-theme="dark"]{ --accent:#5fb98d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:30px 60px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-mute)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.6vw,44px);line-height:1.06;
+  margin:.28em 0 0;letter-spacing:-.015em;text-wrap:balance}
+.standfirst{font-family:var(--serif);font-size:clamp(15.5px,1.9vw,18.5px);line-height:1.5;
+  color:var(--ink-soft);max-width:66ch;margin:14px 0 0}
+.standfirst em{font-style:italic;color:var(--ink)}
+.correct{margin:24px 0 0;background:var(--surface);border:1px solid var(--warn);
+  border-left:4px solid var(--warn);border-radius:3px;padding:17px 19px;display:grid;gap:7px}
+.correct .cl{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--warn)}
+.correct b{font-family:var(--serif);font-size:19px}
+.correct p{margin:0;color:var(--ink-soft);max-width:72ch}
+
+.pipe{margin:30px 0 0;padding:18px;background:var(--sunken);border:1px solid var(--rule-soft);
+  border-radius:3px;overflow-x:auto}
+.pipe pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.75;color:var(--ink-soft);
+  min-width:560px}
+.pipe .pl{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-mute);margin-bottom:12px}
+
+.tabs{display:flex;flex-wrap:wrap;gap:7px;margin:34px 0 0;padding-bottom:18px;
+  border-bottom:1px solid var(--rule)}
+.tabs button{font:inherit;font-size:13px;cursor:pointer;text-align:left;background:var(--surface);
+  border:1px solid var(--rule);border-radius:2px;padding:7px 12px;color:var(--ink-soft);
+  display:grid;gap:2px;line-height:1.25}
+.tabs button:hover{border-color:var(--ink-mute);color:var(--ink)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tabs button[aria-pressed="true"]{background:var(--surface-2);border-color:var(--ink);color:var(--ink)}
+.tabs .ask{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-mute)}
+
+.demo{margin-top:24px;display:grid;gap:17px;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+@media (max-width:840px){ .demo{grid-template-columns:1fr} }
+.card{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;padding:17px 18px;
+  display:grid;gap:11px;align-content:start}
+.card h2{font-family:var(--serif);font-size:24px;font-weight:600;margin:0}
+.card .st{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  padding:3px 8px;border-radius:2px;border:1px solid currentColor;color:var(--ink-mute)}
+.chip.live{color:var(--ok)} .chip.none{color:var(--crit)}
+.card dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-mute);margin-bottom:4px}
+.card dd{margin:0 0 11px;color:var(--ink-soft)}
+.card dd:last-child{margin-bottom:0}
+.card a{color:var(--accent)}
+.card .poke{border-left:2px solid var(--accent);padding-left:12px;font-family:var(--serif);
+  font-size:14.5px;font-style:italic;color:var(--ink-soft)}
+
+.rates{display:grid;gap:8px}
+.rates .rl{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-mute)}
+.row{display:grid;grid-template-columns:96px 1fr 52px;gap:9px;align-items:center;font-size:12px}
+.row .nm{font-family:var(--mono);font-size:11px;color:var(--ink)}
+.row .ct{font-family:var(--mono);font-size:9.5px;color:var(--ink-mute)}
+.bar{height:9px;background:var(--sunken);border-radius:1px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent)}
+.bar.zero span{background:var(--ink-mute);opacity:.35}
+.hz{font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums;text-align:right;
+  color:var(--ink-soft)}
+.role-sensory{border-left:2px solid var(--accent);padding-left:7px}
+.role-motor{border-left:2px solid var(--warn);padding-left:7px}
+.role-reward,.role-modulatory{border-left:2px solid var(--ink-mute);padding-left:7px}
+.act{font-family:var(--mono);font-size:11.5px;background:var(--sunken);padding:9px 11px;
+  border-radius:2px;color:var(--ink);overflow-x:auto;white-space:pre}
+.measured{font-size:11.5px;color:var(--ink-mute);padding-top:9px;border-top:1px solid var(--rule-soft)}
+footer{margin-top:44px;padding-top:19px;border-top:1px solid var(--rule);font-size:12.5px;
+  color:var(--ink-mute);display:grid;gap:8px;max-width:80ch}
+footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">hardware-playground &middot; project 02 &middot; drosophila connectome</div>
+  <h1>Connectome Control Room</h1>
+  <p class="standfirst">Four demos &mdash; the fly doomscrolling, trading stocks, playing
+  Doom, and playing Beat Saber. All four exist. Three have public repos; Beat Saber is a
+  video demo with no repo, so it gets rebuilt from the same primitives. <em>The firing
+  rates below are measured, not illustrative.</em></p>
+</header>
+
+<div class="correct">
+  <div class="cl">Correction worth having up front</div>
+  <b>These are MaleCNS, not FlyWire.</b>
+  <p><strong>MaleCNS</strong> &mdash; adult male CNS, ~166k neurons and ~125M connections,
+  released early September 2026 by Google Research and HHMI Janelia &mdash; is what set
+  off the current wave and what all these demos use. <strong>FlyWire</strong> is the adult
+  <em>female</em> brain: older, far better annotated, better tooling. Use MaleCNS to make
+  the fly play a game; use FlyWire to understand what you built; use <strong>BANC</strong>
+  plus NeuroMechFly if you want a real body, because brain-only datasets cannot close the
+  sensorimotor loop &mdash; the descending neurons terminate in a nerve cord you do not have.</p>
+</div>
+
+<div class="pipe">
+  <div class="pl">Why one harness instead of four cloned repos</div>
+<pre>task observation ──► sensory encoder ──► LIF sim over connectome graph ──► readout ──► action
+                     inject current into    the only shared,              descending
+                     named populations      expensive part                 neurons
+                                                    │
+                                                    └──► dopaminergic reward</pre>
+</div>
+<p class="standfirst" style="font-size:14.5px;max-width:74ch">All four demos are that
+same three-stage pipeline with different ends. Cloning four repos gets you four
+incompatible LIF simulators and no way to ask <em>&ldquo;does the same fly behave
+consistently across tasks?&rdquo;</em> &mdash; which is the actually interesting question.
+So each demo here is ~80 lines: which neurons to drive, and which to read.</p>
+
+<nav class="tabs" id="tabs" aria-label="Demos"></nav>
+<div class="demo" id="demo"></div>
+
+<footer>
+  <div><strong>Two bugs this found by being run rather than read.</strong> External
+  current was being accumulated into the decaying synaptic pool every step, building to
+  ~50&times; its nominal value and pinning every driven population at the refractory
+  limit of 454 Hz. And the pathway weights were 8&times; too strong, putting downstream
+  populations above 300 Hz &mdash; which no fly neuron does. Both are fixed; the rates
+  shown are from after.</div>
+  <div>Community index this came from:
+  <a href="https://github.com/cobanov/awesome-fly">cobanov/awesome-fly</a> (~60 projects).
+  The one paper to read is Shiu et al., the whole-brain LIF model everyone is
+  reimplementing:
+  <a href="https://github.com/philshiu/Drosophila_brain_model">philshiu/Drosophila_brain_model</a>.</div>
+  <div>Harness: <code>02-flywire-connectome/harness/</code> &mdash; run
+  <code>python -m harness.smoke</code> for the numbers above, offline, no download.</div>
+</footer>
+</div>
+
+<script>
+const DEMOS = [{"id": "doomscroll", "name": "Doomscrolling", "ask": "the fly doomscrolling", "repo": "https://github.com/ranagwho/Fruitfly-Doomscroller", "repoName": "FlyScroll", "status": "public repo", "stack": "Python", "idea": "Visual activity plus mushroom-body activity gate the scroll decision, so the fly keeps scrolling while the current frame is still novel to it and stops once it habituates.", "why": "The most conceptually interesting of the four. The mushroom body is the fly's associative-learning centre and habituation there is real, well-characterised biology &mdash; so doomscrolling-as-habituation-failure is a genuine hypothesis, not a joke.", "poke": "Ablate the mushroom body output neurons and see whether it scrolls forever.", "pops": [["visual", "LC11, LC15", "sensory", 52.6], ["kenyon", "KCg-m, KCab-c", "sensory", 60.1], ["mbon", "MBON01, MBON11", "motor", 60.1], ["dan", "PPL101, PAM11", "reward", 0.0]], "action": "{'scroll': True, 'engagement': 60.1}"}, {"id": "stonks", "name": "Trading stocks", "ask": "the fly trading stocks", "repo": "https://github.com/nftechie/stonkfly", "repoName": "Stonkfly", "status": "public repo", "stack": "Python", "idea": "Price charts go in as images to the visual system; the connectome's dopaminergic circuits are wired to P&amp;L.", "why": "Read this honestly: a fly brain has no market prior, so this is a randomly-initialised sparse recurrent net with a reward signal. Expect noise. Its value is as a <strong>plumbing test</strong> &mdash; if the reward wiring is right, the fly should at minimum learn to stop repeating trades that are immediately punished, and that finding transfers to Doom where reward actually matters.", "poke": "<strong>Paper only. Never point this at a live account.</strong>", "pops": [["visual", "LC11, LC15, LC4", "sensory", 32.4], ["mbon", "MBON01, MBON11", "motor", 30.0], ["dan_reward", "PAM11", "reward", 0.0], ["dan_punish", "PPL101", "reward", 0.0]], "action": "{'side': 'buy', 'confidence': 1.0, 'paper': True}"}, {"id": "doom", "name": "Doom", "ask": "the fly playing Doom on a keyboard", "repo": "https://github.com/eganeganegan/flydoom", "repoName": "FlyDoom", "status": "public repo", "stack": "Python + ViZDoom", "idea": "Each frame stimulates visual sensory neurons; descending neurons map to game controls; dopaminergic circuits supply reinforcement. ~6,000 playthroughs so far and it has not finished the game.", "why": "<strong>Start with FlyDoom, not Doomfly</strong> &mdash; it compares the connectome-constrained sparse controller against baselines. Without a baseline you cannot tell whether the fly's anatomy is doing anything or whether any sparse random net of that size performs identically.", "poke": "The shoot signal is P1 arousal: <em>&ldquo;the more aroused the fly is the harder it tries to shoot&rdquo;</em>.", "pops": [["visual_left", "LC4", "sensory", 32.1], ["visual_right", "LPLC2", "sensory", 35.0], ["dn_turn", "DNa02", "motor", 0.0], ["dn_forward", "DNp09", "motor", 1.5], ["p1_command", "P1_a", "modulatory", 49.5], ["dan", "PPL101", "reward", 0.0]], "action": "{'turn': -0.76, 'forward': False, 'shoot': True}"}, {"id": "beatsaber", "name": "Beat Saber", "ask": "the fly playing Beat Saber", "repo": null, "repoName": "domi's demo (Bluesky/X video)", "status": "no public repo — rebuilt here", "stack": "rebuilt from the published mechanism", "idea": "Visual looming detectors decide <em>when to turn</em>. The <strong>courtship song</strong> circuit decides <em>when to swing</em> &mdash; P1/pC1 are male-specific command neurons for the mating song, and their activation level sets song vigour, mapped onto swing strength.", "why": "The cleverest of the four, and it rebuilds cleanly because P1&rarr;pIP10&rarr;wing-motor is one of the best-traced pathways in the male connectome. <strong>This circuit is male-specific, so this demo cannot be done on FlyWire at all</strong> &mdash; a genuine reason MaleCNS matters.", "poke": "Swing threshold is uncalibrated; wing motor sits at 0 Hz here because only pIP10 (24 neurons) feeds it.", "pops": [["visual_loom", "LC4, LPLC2", "sensory", 73.2], ["p1_command", "P1_a, pC1", "modulatory", 43.2], ["pip10", "pIP10", "motor", 18.8], ["wing_motor", "hg1, hg2, hg3", "motor", 0.0]], "action": "{'swing': False, 'strength': 0.31}"}];
+let cur = 0;
+const MAXHZ = 80;
+
+function renderTabs(){
+  document.getElementById("tabs").innerHTML = DEMOS.map((d,i) => `
+    <button aria-pressed="${i===cur}" data-i="${i}">
+      <span class="ask">${d.ask}</span><span>${d.name}</span></button>`).join("");
+  document.querySelectorAll("#tabs button").forEach(b =>
+    b.addEventListener("click", () => { cur = +b.dataset.i; renderTabs(); renderDemo(); }));
+}
+
+function renderDemo(){
+  const d = DEMOS[cur];
+  document.getElementById("demo").innerHTML = `
+    <div class="card">
+      <div class="st">
+        <span class="chip ${d.repo ? "live" : "none"}">${d.status}</span>
+        <span class="chip">${d.stack}</span>
+      </div>
+      <h2>${d.name}</h2>
+      <dl>
+        <div><dt>How it works</dt><dd>${d.idea}</dd></div>
+        <div><dt>Upstream</dt><dd>${d.repo
+          ? `<a href="${d.repo}">${d.repoName}</a>` : d.repoName}</dd></div>
+        <div><dt>Read this honestly</dt><dd>${d.why}</dd></div>
+      </dl>
+      <div class="poke">${d.poke}</div>
+    </div>
+    <div class="card">
+      <div class="rates">
+        <div class="rl">Measured population rates &mdash; final frame</div>
+        ${d.pops.map(([nm,ct,role,hz]) => `
+          <div class="row role-${role}">
+            <span><span class="nm">${nm}</span><br><span class="ct">${ct}</span></span>
+            <span class="bar ${hz===0?"zero":""}"><span style="width:${Math.min(100,hz/MAXHZ*100)}%"></span></span>
+            <span class="hz">${hz.toFixed(1)}</span>
+          </div>`).join("")}
+      </div>
+      <div><dt style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+        text-transform:uppercase;color:var(--ink-mute);margin-bottom:5px">Action produced</dt>
+        <div class="act">${d.action}</div></div>
+      <div class="measured">Sensory layers land at 32&ndash;73 Hz and downstream at
+      0&ndash;60 Hz &mdash; physiological, and the readout thresholds are genuinely
+      exercised, with some populations firing and some silent. The 0 Hz rows are real:
+      those pathways are fed by a single 24-neuron population, which is too weak to reach
+      threshold. Rates come from a <strong>synthetic</strong> connectome with MaleCNS-like
+      statistics, so the pipeline is verified but the circuits are not real yet.</div>
+    </div>`;
+}
+renderTabs(); renderDemo();
+</script>

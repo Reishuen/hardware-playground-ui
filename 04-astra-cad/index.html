@@ -1,0 +1,273 @@
+<meta charset="utf-8">
+<title>Astra CAD Cost Model</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Shared design tokens for the playground UIs. Each project sets --accent itself so
+   the four pages read as one suite while staying individually identifiable. */
+:root{
+  --ground:#eceff3; --surface:#fbfcfd; --surface-2:#f2f5f8; --sunken:#e3e8ee;
+  --ink:#141922; --ink-soft:#3b4653; --ink-mute:#6a7583;
+  --rule:#d1d8e0; --rule-soft:#e2e7ed;
+  --ok:#2f7d5c; --warn:#9c6a10; --crit:#ab4436;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --sunken:#11161d;
+  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
+  --rule:#2a323d; --rule-soft:#212832;
+  --ok:#5fb98d; --warn:#d3a03a; --crit:#e0776a;
+}}
+:root[data-theme="dark"]{
+  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --sunken:#11161d;
+  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
+  --rule:#2a323d; --rule-soft:#212832;
+  --ok:#5fb98d; --warn:#d3a03a; --crit:#e0776a;
+}
+
+:root{ --accent:#9c6a10; }
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ --accent:#d3a03a; }}
+:root[data-theme="dark"]{ --accent:#d3a03a; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:30px 60px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-mute)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.6vw,44px);line-height:1.06;
+  margin:.28em 0 0;letter-spacing:-.015em;text-wrap:balance}
+.standfirst{font-family:var(--serif);font-size:clamp(15.5px,1.9vw,18.5px);line-height:1.5;
+  color:var(--ink-soft);max-width:66ch;margin:14px 0 0}
+.standfirst em{font-style:italic;color:var(--ink)}
+.verdict{margin:24px 0 0;padding:16px 19px;background:var(--surface);
+  border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:3px}
+.verdict b{font-family:var(--serif);font-size:19px}
+.verdict p{margin:6px 0 0;color:var(--ink-soft);max-width:70ch}
+
+.controls{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));
+  margin:28px 0 0;padding:18px 19px;background:var(--surface-2);
+  border:1px solid var(--rule-soft);border-radius:3px}
+.ctl{display:grid;gap:6px}
+.ctl label{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-mute)}
+.ctl .val{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.ctl.toggle{align-content:start}
+.sw{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-size:13.5px;
+  color:var(--ink-soft)}
+.sw input{accent-color:var(--accent);width:17px;height:17px;cursor:pointer}
+
+.tiles{display:grid;gap:11px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:18px 0 0}
+.tile{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;
+  padding:14px 15px;display:grid;gap:4px}
+.tile .tl{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-mute)}
+.tile .tv{font-family:var(--mono);font-size:25px;font-variant-numeric:tabular-nums;
+  line-height:1.1;color:var(--ink)}
+.tile .tn{font-size:12px;color:var(--ink-mute)}
+.tile.hot{border-color:var(--crit)} .tile.hot .tv{color:var(--crit)}
+.tile.good{border-color:var(--ok)} .tile.good .tv{color:var(--ok)}
+
+figure{margin:26px 0 0;background:var(--sunken);border:1px solid var(--rule-soft);
+  border-radius:3px;padding:16px 8px 8px}
+figure figcaption{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-mute);padding:0 12px 10px}
+svg#chart{display:block;width:100%;height:auto}
+.axis{font-family:var(--mono);font-size:9px;fill:var(--ink-mute)}
+.gridline{stroke:var(--rule);stroke-width:.5}
+
+table{width:100%;border-collapse:collapse;margin:26px 0 0;font-size:13.5px}
+caption{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-mute);text-align:left;padding-bottom:9px}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--rule-soft)}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-mute);font-weight:400}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+tbody tr:last-child td{border-bottom:0}
+.win{color:var(--ok);font-weight:600}
+footer{margin-top:40px;padding-top:19px;border-top:1px solid var(--rule);font-size:12.5px;
+  color:var(--ink-mute);display:grid;gap:8px;max-width:80ch}
+footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">hardware-playground &middot; project 04 &middot; GPT-6 Astra</div>
+  <h1>Astra CAD Cost Model</h1>
+  <p class="standfirst">Is the API a bad idea because running it in-app is cheaper?
+  In-app <em>is</em> cheaper in dollars and much more expensive in everything else.
+  The number that will surprise you is the <em>272k cliff</em> &mdash; cross it on one
+  request and the <em>entire</em> request re-bills at double.</p>
+</header>
+
+<div class="verdict">
+  <b>Use the API. Prune context every iteration. Never use fast mode.</b>
+  <p>Fast mode is roughly 2&times; the price for ~2.5&times; the speed, and nothing in a
+  CAD run is latency-sensitive. Pruning is not an optimisation here, it is what keeps
+  you off the long-context rate for the back half of every run.</p>
+</div>
+
+<div class="controls">
+  <div class="ctl">
+    <label for="iters">Loop iterations</label>
+    <span class="val" id="iters-v">40</span>
+    <input type="range" id="iters" min="5" max="60" value="40" step="1">
+  </div>
+  <div class="ctl">
+    <label for="base">Base context, tokens</label>
+    <span class="val" id="base-v">15k</span>
+    <input type="range" id="base" min="5" max="60" value="15" step="1">
+  </div>
+  <div class="ctl">
+    <label for="views">Rendered views per turn</label>
+    <span class="val" id="views-v">6</span>
+    <input type="range" id="views" min="1" max="12" value="6" step="1">
+  </div>
+  <div class="ctl toggle">
+    <label>Context strategy</label>
+    <label class="sw"><input type="checkbox" id="prune">
+      Prune superseded code &amp; old renders</label>
+  </div>
+</div>
+
+<div class="tiles" id="tiles"></div>
+
+<figure>
+  <figcaption>Input tokens per request &mdash; against the 272k long-context threshold</figcaption>
+  <svg id="chart" viewBox="0 0 900 330" role="img"
+    aria-label="Input tokens per request across loop iterations, with the 272k threshold marked"></svg>
+</figure>
+
+<table id="cmp">
+  <caption>One run, three ways</caption>
+</table>
+
+<footer>
+  <div><strong>Why in-app loses despite being cheaper.</strong> Marginal cost on the $200
+  plan is about $0.25/message, so a 25-iteration run is ~$6 of quota. But you become the
+  render loop: copy code out, execute, render views, re-upload &mdash; 3&ndash;5 minutes
+  &times; 25, so <strong>1.5&ndash;2 hours of manual work per run</strong>. Above roughly
+  $7/hour for your own time, the API is cheaper. Three tasks &times; three attempts is a
+  15-hour week of clicking.</div>
+  <div><strong>And the headline benchmark is a tools number.</strong> Astra scores
+  <strong>95.9% on BenchCAD</strong> mean voxel IoU reconstructing 3D objects from
+  multi-view renders by writing CAD code &mdash; versus 83.3% for GPT-5.6 Sol and 84.3%
+  for Claude Fable 5.1. That is a closed-loop-with-tools result. Break the loop and you
+  are sampling a different, worse distribution.</div>
+  <div>Rates: $10/M in, $50/M out standard; <strong>$20/M in, $75/M out once a single
+  request&rsquo;s input reaches 272k</strong>. Sources:
+  <a href="https://openai.com/index/gpt-6-astra/">OpenAI</a>,
+  <a href="https://thenewstack.io/openai-gpt6-astra-benchmarks/">BenchCAD writeup</a>.
+  Working: <code>04-astra-cad/docs/cost-analysis.md</code></div>
+</footer>
+</div>
+
+<script>
+const R = {inStd:10/1e6, outStd:50/1e6, inLong:20/1e6, outLong:75/1e6, THRESH:272000};
+const IMG = 1000, OUT_PER = 3000;
+const $ = id => document.getElementById(id);
+const fmtK = n => n >= 1000 ? (n/1000).toFixed(0) + "k" : String(n);
+const money = n => "$" + n.toFixed(2);
+
+function model(pruneOverride){
+  const iters = +$("iters").value, base = +$("base").value * 1000,
+        views = +$("views").value,
+        prune = pruneOverride === undefined ? $("prune").checked : pruneOverride;
+  const imgs = views * IMG;
+  const rows = [];
+  let cost = 0, crossed = 0;
+  for (let k = 1; k <= iters; k++){
+    // Unpruned, the transcript accrues every prior turn's code and renders. Pruned, you
+    // keep the spec, the current code, the latest renders and a short defect list, so
+    // per-request input stays flat.
+    const inTok = prune ? base + imgs + 6000
+                        : base + imgs + (k - 1) * (OUT_PER + imgs * 0.6);
+    const long = inTok >= R.THRESH;
+    if (long) crossed++;
+    cost += inTok * (long ? R.inLong : R.inStd) + OUT_PER * (long ? R.outLong : R.outStd);
+    rows.push({k, inTok, long});
+  }
+  return {iters, rows, cost, crossed, prune};
+}
+
+function render(){
+  $("iters-v").textContent = $("iters").value;
+  $("base-v").textContent = $("base").value + "k";
+  $("views-v").textContent = $("views").value;
+
+  const m = model();
+  const peak = Math.max(...m.rows.map(r => r.inTok));
+  const inApp = m.iters * 0.25;
+  const hours = m.iters * 4 / 60;
+
+  $("tiles").innerHTML = [
+    {l:"Cost per run", v:money(m.cost), n:`${m.iters} iterations`, c: m.crossed ? "hot" : "good"},
+    {l:"Three benchmarks \u00d7 3 attempts", v:money(m.cost*9), n:"the real budget", c:""},
+    {l:"Peak input per request", v:fmtK(Math.round(peak)), n: peak >= R.THRESH
+        ? "over the 272k threshold" : "under 272k \u2014 standard rate", c: peak >= R.THRESH ? "hot":"good"},
+    {l:"Requests billed at 2\u00d7", v:`${m.crossed}/${m.iters}`,
+      n: m.crossed ? "long-context rate" : "none", c: m.crossed ? "hot":"good"},
+    {l:"In-app quota cost", v:money(inApp), n:`plus ~${hours.toFixed(1)} h of your time`, c:""},
+  ].map(t => `<div class="tile ${t.c}"><span class="tl">${t.l}</span>
+      <span class="tv">${t.v}</span><span class="tn">${t.n}</span></div>`).join("");
+
+  drawChart(m, peak);
+
+  // Both strategies costed independently of the toggle, so each row means what it says.
+  const pruned = model(true).cost, unpruned = model(false).cost;
+  const yourTime = 40;
+  $("cmp").innerHTML = `<caption>One run, three ways</caption>
+    <thead><tr><th>Approach</th><th>Dollars</th><th>Your time</th>
+      <th>Closed render loop</th><th>Repeatable</th><th>True cost at $${yourTime}/h</th></tr></thead>
+    <tbody>
+      <tr><td><strong>API, pruned</strong></td><td class="num">${money(pruned)}</td>
+        <td class="num">~0 h</td><td class="win">yes</td><td class="win">yes</td>
+        <td class="num win">${money(pruned)}</td></tr>
+      <tr><td>API, unpruned</td><td class="num">${money(unpruned)}</td>
+        <td class="num">~0 h</td><td>yes</td><td>yes</td>
+        <td class="num">${money(unpruned)}</td></tr>
+      <tr><td>In-app (ChatGPT Pro $200)</td><td class="num">${money(inApp)}</td>
+        <td class="num">${hours.toFixed(1)} h</td><td>no</td><td>no</td>
+        <td class="num">${money(inApp + hours*yourTime)}</td></tr>
+    </tbody>`;
+}
+
+function drawChart(m, peak){
+  const W = 900, H = 330, L = 62, Rr = 16, T = 16, B = 40;
+  const xs = i => L + (i/(Math.max(1,m.iters-1))) * (W-L-Rr);
+  const yMax = Math.max(peak, R.THRESH) * 1.12;
+  const ys = v => H - B - (v/yMax) * (H-T-B);
+  let s = "";
+  // horizontal gridlines, each labelled with a value the chart reaches
+  for (let g = 0; g <= 4; g++){
+    const v = yMax * g/4, y = ys(v);
+    s += `<line class="gridline" x1="${L}" y1="${y}" x2="${W-Rr}" y2="${y}"/>
+      <text class="axis" x="${L-8}" y="${y+3}" text-anchor="end">${fmtK(Math.round(v))}</text>`;
+  }
+  // the threshold
+  s += `<line x1="${L}" y1="${ys(R.THRESH)}" x2="${W-Rr}" y2="${ys(R.THRESH)}"
+    stroke="var(--crit)" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="axis" x="${W-Rr}" y="${ys(R.THRESH)-7}" text-anchor="end"
+      fill="var(--crit)">272k \u2014 entire request re-bills at 2\u00d7</text>`;
+  // the series
+  const pts = m.rows.map((r,i) => `${xs(i)},${ys(r.inTok)}`).join(" ");
+  s += `<polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+  m.rows.forEach((r,i) => {
+    s += `<circle cx="${xs(i)}" cy="${ys(r.inTok)}" r="${r.long?4:2.6}"
+      fill="${r.long ? "var(--crit)" : "var(--accent)"}"/>`;
+  });
+  // x axis
+  const step = Math.max(1, Math.round(m.iters/8));
+  for (let i = 0; i < m.iters; i += step)
+    s += `<text class="axis" x="${xs(i)}" y="${H-B+16}" text-anchor="middle">${i+1}</text>`;
+  s += `<text class="axis" x="${(L+W-Rr)/2}" y="${H-4}" text-anchor="middle">loop iteration</text>`;
+  $("chart").innerHTML = s;
+}
+
+["iters","base","views","prune"].forEach(id =>
+  $(id).addEventListener("input", render));
+render();
+</script>
