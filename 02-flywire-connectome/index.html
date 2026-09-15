@@ -2,6 +2,7 @@
 <title>Connectome Control Room</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 /* Shared design tokens for the playground UIs. Each project sets --accent itself so
    the four pages read as one suite while staying individually identifiable. */
@@ -125,6 +126,19 @@ footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5
 .diag .ar.fb{stroke:var(--crit);stroke-dasharray:4 4}
 .diag .al{font-family:var(--mono);font-size:8.5px;fill:var(--ink-mute)}
 .diag .fact{font-size:12.5px;color:var(--ink-soft);margin:0;max-width:90ch}
+
+/* ---- brain view ------------------------------------------------------------------ */
+.lab{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+.brain{position:relative;background:var(--sunken);border-radius:2px;aspect-ratio:16/10;overflow:hidden;touch-action:none;max-width:100%}
+.brain canvas{display:block;width:100%;height:100%;cursor:grab}
+.brain .bl{position:absolute;left:10px;top:8px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);pointer-events:none}
+.brain .br{position:absolute;right:10px;top:8px;display:flex;gap:4px}
+.brain .br button{font:inherit;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:3px 7px;color:var(--ink-soft)}
+.brain .br button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.brain .bk{position:absolute;left:10px;bottom:8px;display:flex;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:9.5px;color:var(--ink-mute);pointer-events:none}
+.brain .bk i{display:inline-flex;align-items:center;gap:4px;font-style:normal}
+.brain .bk i b{width:7px;height:7px;border-radius:50%;background:var(--rc);display:inline-block}
+.env canvas.world{aspect-ratio:16/7}
 /* ---- task environment ---------------------------------------------------------- */
 .env{grid-column:1/-1;display:grid;gap:10px}
 .env .envhead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
@@ -218,6 +232,13 @@ So each demo here is ~80 lines: which neurons to drive, and which to read.</p>
 
 <section class="lab" aria-label="Live simulation">
   <div class="labhead"><h2>The fly, running</h2><div class="lstat" id="lstat"></div></div>
+  <div class="panel">
+    <div class="pl">the brain &mdash; 4,000 neurons, spikes light up; drag to orbit</div>
+    <div class="brain" id="brainwrap"><canvas id="brain"></canvas><div class="bl" id="brainlabel"></div>
+      <div class="br"><button id="edgesbtn" aria-pressed="true">wiring</button><button id="autobtn" aria-pressed="true">orbit</button></div>
+      <div class="bk" id="brainkey"></div></div>
+    <p class="mnote" style="margin:0">Layout is anatomical only in the sense that populations sit where their real cell types live &mdash; lobula columnar cells in the optic lobes, Kenyon cells in the mushroom-body calyx, descending neurons at the cervical connective, wing motor neurons in the ventral cord below. The 3,568 unlabelled neurons are scattered. MaleCNS has real coordinates for all of this; the harness does not yet load them.</p>
+  </div>
   <div class="panel">
     <div class="pl">circuit &mdash; fill is live firing rate; click a population to ablate it</div>
     <svg class="circuit" id="circuit" viewBox="0 0 560 300" role="img" aria-label="Circuit diagram with live firing rates"></svg>
@@ -416,7 +437,7 @@ function loadDemo(id){
   for (const [name,cts] of spec.pops){ popIdx[name] = cts.flatMap(c => C.byType[c]); hist[name]=new Float32Array(HISTLEN); }
   for (const [name] of spec.stim) stim[name] = 0.8;
   net.reset(); net.dead.fill(0);
-  renderCtrls(); renderKey(); buildCircuit(); clearCanvases(); loadEnv(id);
+  renderCtrls(); renderKey(); buildCircuit(); clearCanvases(); loadEnv(id); brainColors();
 }
 
 function externalCurrent(){
@@ -525,56 +546,98 @@ function paintTraces(){
 const wc = document.getElementById("world"); let auto = true;
 document.getElementById("autob").addEventListener("click", e => { auto=!auto; e.target.setAttribute("aria-pressed", String(auto)); });
 const ENV_NOTES = {
-  doomscroll:"A feed of posts. Each post has a novelty (its brightness); the fly's visual → Kenyon-cell → MBON pathway reports it. As in FlyScroll, the fly watches while that signal is high and the feed advances once it has stayed low — habituation is what moves you on. Novelty decays while a post is on screen. Ablate the Kenyon cells and the novelty signal never forms, so the feed advances immediately: a fly that cannot be interested scrolls forever.",
-  stonks:"A random-walk price with occasional trends. Chart contrast (how much the last bars move) drives the visual population; the MBON rate sets buy vs hold. Paper only — P&L from the trades feeds the reward and punishment dopamine populations on the next frame, exactly as the harness does.",
-  doom:"Top-down arena. An enemy drifts around; its bearing splits into a left and a right looming signal (LC4 / LPLC2), the descending-neuron rates turn and advance the fly, and P1 arousal decides when it shoots. The upstream FlyDoom does the same through ViZDoom frames; this is the same loop on a canvas.",
-  beatsaber:"Tiles approach on a lane. Loom is how close the nearest tile is; the courtship command neurons (P1/pC1 → pIP10 → wing motor) set swing strength. A swing that lands while a tile is in the hit zone scores. This circuit is male-specific — the reason MaleCNS matters for this demo.",
+  doomscroll:"A phone playing short-form reels — procedural patterns, like FlyScroll's built-in brainrot mode. Each reel has a novelty (its brightness); the fly's visual → Kenyon-cell → MBON pathway reports it. As in FlyScroll, the fly watches while that signal is high and the feed advances once it has stayed low — habituation is what moves you on. Novelty decays while a post is on screen. Ablate the Kenyon cells and the novelty signal never forms, so the feed advances immediately: a fly that cannot be interested scrolls forever.",
+  stonks:"Candlesticks from a random walk with trends, the way Stonkfly renders a chart for the eye. Chart contrast (the range of the last candles) drives the visual population; the MBON rate sets buy vs hold. Paper only — P&L from the trades feeds the reward and punishment dopamine populations on the next frame, exactly as the harness does.",
+  doom:"First-person raycast corridor, ViZDoom's stand-in. An enemy patrols; its bearing splits into a left and a right looming signal (LC4 / LPLC2), the descending-neuron rates turn and advance you, and P1 arousal — the fly at the bottom beats its wings with it — decides when to shoot. FlyDoom does this through real ViZDoom frames and a visual encoder; here the encoder is the bearing.",
+  beatsaber:"Tiles come down a lane toward the fly and its two sabers. Loom is how close the nearest tile is; the courtship command neurons (P1/pC1 → pIP10 → wing motor) set swing strength. A swing that lands while a tile is in the hit zone scores. This circuit is male-specific — the reason MaleCNS matters for this demo.",
 };
+/* A procedural fly, drawn on any canvas. `flap` 0..1 drives the wings, `look` the head angle. */
+function drawFly(g,x,y,sz,flap,look=0,facing=1){
+  g.save(); g.translate(x,y); g.scale(facing*sz,sz);
+  const wa=0.25+0.9*flap*Math.abs(Math.sin(performance.now()/22));
+  g.fillStyle="rgba(180,190,205,0.45)"; for (const sgn of [-1,1]){ g.save(); g.rotate(-0.9-wa*sgn*0.5); g.beginPath(); g.ellipse(-8,-10*sgn,16,6,0,0,7); g.fill(); g.restore(); }
+  g.fillStyle="#3b3f4a"; g.beginPath(); g.ellipse(-4,0,14,7,0,0,7); g.fill();                    // abdomen
+  g.fillStyle="#2a2e38"; g.beginPath(); g.ellipse(6,-1,7,6,0,0,7); g.fill();                     // thorax
+  g.save(); g.translate(13,-2); g.rotate(look); g.fillStyle="#2a2e38"; g.beginPath(); g.arc(0,0,5,0,7); g.fill();
+  g.fillStyle="#c85a50"; g.beginPath(); g.arc(2,-2,2.6,0,7); g.fill(); g.beginPath(); g.arc(2,2,2.6,0,7); g.fill(); g.restore();  // compound eyes
+  g.strokeStyle="#2a2e38"; g.lineWidth=1.2; for (let i=0;i<3;i++){ g.beginPath(); g.moveTo(2+i*3,4); g.lineTo(-2+i*5,12); g.stroke(); }
+  g.restore();
+}
 const ENV = {
-  doomscroll:{ init(){ this.posts=[]; this.y=0; this.score=0; for(let i=0;i<6;i++) this.spawn(i*70); },
-    spawn(y){ this.posts.push({y, nov:0.35+Math.random()*0.65, seen:0}); },
-    observe(a){ const p=this.posts.find(q=>q.y>-10)||this.posts[0]; return {visual:p?Math.max(0,p.nov):0}; },
-    // Upstream semantics (FlyScroll): the fly WATCHES while the MBON novelty signal is
-    // high, and the feed advances once that signal has dropped — habituation moves you on.
-    step(a){ const top=this.posts.find(q=>q.y>-10); if(top){ top.seen+=1; top.nov*=0.992; }
-      this.low = a.scroll ? 0 : (this.low||0)+1;
-      const advance = this.low > 6 ? 2.6 : 0;                 // sustained low novelty → scroll
-      for(const p of this.posts) p.y-=advance;
-      this.posts=this.posts.filter(p=>p.y>-80); while(this.posts.length<8) this.spawn(Math.max(...this.posts.map(p=>p.y),0)+70); if(advance) this.score+=1; },
-    draw(g,W,H){ const cw=Math.min(W*0.42,520), x0=(W-cw)/2; g.fillStyle=cssv("--surface"); g.fillRect(x0,0,cw,H);
-      for(const p of this.posts){ const y=p.y*(H/300)*1.2; if(y<-60||y>H) continue; g.fillStyle=cssv("--rule-soft"); g.fillRect(x0+12,y+6,cw-24,54); g.fillStyle=cssv("--ink"); g.globalAlpha=0.15+0.85*p.nov; g.fillRect(x0+22,y+16,cw*0.55,10); g.fillRect(x0+22,y+34,cw*0.35,8); g.globalAlpha=1; }
-      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`posts scrolled: ${Math.floor(this.score/30)}`, x0+cw+16, 30); g.fillText(`top-post novelty ${((this.posts.find(q=>q.y>-10)||{nov:0}).nov).toFixed(2)}`, x0+cw+16, 58); } },
-  stonks:{ init(){ this.px=[]; let v=100; for(let i=0;i<120;i++){ v+=Math.random()*2-1; this.px.push(v);} this.pos=0; this.cash=0; this.trend=0; this.last=null; },
-    observe(){ const k=this.px.slice(-8); const c=(Math.max(...k)-Math.min(...k))/3; return {visual:Math.min(1,c), dan_reward:Math.max(0,this.last||0), dan_punish:Math.max(0,-(this.last||0))}; },
-    step(a){ if(Math.random()<0.02) this.trend=(Math.random()*2-1)*0.6; const nv=this.px[this.px.length-1]+this.trend+Math.random()*2-1; const d=nv-this.px[this.px.length-1]; this.px.push(nv); if(this.px.length>160) this.px.shift();
-      if(a.side==="buy"){ this.pos=1; } else this.pos=0; const pnl=this.pos*d; this.cash+=pnl; this.last=Math.max(-1,Math.min(1,pnl)); },
-    draw(g,W,H){ const n=this.px.length, lo=Math.min(...this.px), hi=Math.max(...this.px); const X=i=>20+i/(n-1)*(W-40), Y=v=>H-20-(v-lo)/(hi-lo+1e-9)*(H-40);
-      g.strokeStyle=cssv("--ink-soft"); g.lineWidth=2; g.beginPath(); this.px.forEach((v,i)=>i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v))); g.stroke();
-      g.fillStyle=this.pos?cssv("--ok"):cssv("--ink-mute"); g.beginPath(); g.arc(X(n-1),Y(this.px[n-1]),7,0,7); g.fill();
-      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`${this.pos?"LONG":"flat"}   paper P&L ${this.cash>=0?"+":""}${this.cash.toFixed(1)}`, 24, 30); } },
-  doom:{ init(){ this.fx=0;this.fy=0;this.fh=0;this.ex=140;this.ey=60;this.ea=Math.random()*7;this.shots=0;this.hits=0;this.flash=0; },
-    observe(){ const dx=this.ex-this.fx, dy=this.ey-this.fy; const bearing=Math.atan2(dy,dx)-this.fh; const b=Math.atan2(Math.sin(bearing),Math.cos(bearing)); const dist=Math.hypot(dx,dy); const near=Math.max(0,1-dist/320);
-      return {visual_left:Math.max(0,Math.sin(-b))*0.6+near*0.4, visual_right:Math.max(0,Math.sin(b))*0.6+near*0.4, p1_command:near, dan:this.flash>0?1:0}; },
-    step(a){ this.fh+=a.turn*0.12; if(a.forward){ this.fx+=Math.cos(this.fh)*2.2; this.fy+=Math.sin(this.fh)*2.2; } this.ea+=0.03; this.ex=150*Math.cos(this.ea*0.7); this.ey=90*Math.sin(this.ea);
-      this.flash=Math.max(0,this.flash-1); if(a.shoot && Math.random()<0.08){ this.shots++; const dx=this.ex-this.fx,dy=this.ey-this.fy; const b=Math.atan2(dy,dx)-this.fh; if(Math.abs(Math.atan2(Math.sin(b),Math.cos(b)))<0.25){ this.hits++; this.flash=20; } }
-      this.fx=Math.max(-220,Math.min(220,this.fx)); this.fy=Math.max(-120,Math.min(120,this.fy)); },
-    draw(g,W,H){ const cx=W/2, cy=H/2, k=Math.min(W/520,H/300); const P=(x,y)=>[cx+x*k,cy+y*k];
-      g.strokeStyle=cssv("--rule"); g.strokeRect(cx-230*k,cy-130*k,460*k,260*k);
-      let [ex,ey]=P(this.ex,this.ey); g.fillStyle=this.flash?cssv("--warn"):cssv("--crit"); g.beginPath(); g.arc(ex,ey,10*k,0,7); g.fill();
-      let [fx,fy]=P(this.fx,this.fy); g.fillStyle=cssv("--accent"); g.beginPath(); g.moveTo(fx+Math.cos(this.fh)*16*k,fy+Math.sin(this.fh)*16*k); g.lineTo(fx+Math.cos(this.fh+2.5)*11*k,fy+Math.sin(this.fh+2.5)*11*k); g.lineTo(fx+Math.cos(this.fh-2.5)*11*k,fy+Math.sin(this.fh-2.5)*11*k); g.closePath(); g.fill();
-      g.strokeStyle=cssv("--ink-mute"); g.setLineDash([4,6]); g.beginPath(); g.moveTo(fx,fy); g.lineTo(fx+Math.cos(this.fh)*80*k,fy+Math.sin(this.fh)*80*k); g.stroke(); g.setLineDash([]);
-      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`shots ${this.shots}  hits ${this.hits}`, 24, 30); } },
+  /* ---- doomscroll: a phone showing short-form reels; the fly perched beside it ---- */
+  doomscroll:{ init(){ this.posts=[]; this.y=0; this.score=0; this.t=0; for(let i=0;i<4;i++) this.spawn(i); },
+    spawn(i){ this.posts.push({y:(this.posts.length?Math.max(...this.posts.map(p=>p.y)):-1)+1, nov:0.35+Math.random()*0.65, seen:0, hue:Math.floor(Math.random()*360), kind:Math.floor(Math.random()*3), seed:Math.random()*100}); },
+    observe(){ const p=this.posts.find(q=>q.y>-0.5)||this.posts[0]; return {visual:p?Math.max(0,p.nov):0}; },
+    step(a){ this.t++; const top=this.posts.find(q=>q.y>-0.5); if(top){ top.seen+=1; top.nov*=0.992; }
+      this.low = a.scroll ? 0 : (this.low||0)+1; const advance = this.low > 6 ? 0.045 : 0;
+      for(const p of this.posts) p.y-=advance; this.posts=this.posts.filter(p=>p.y>-1.2); while(this.posts.length<5) this.spawn(); if(advance) this.score+=1; },
+    draw(g,W,H){ const ph=H*0.94, pw=ph*0.5, px=W*0.5-pw/2, py=H*0.03;   // phone
+      g.fillStyle="#1e2532"; g.beginPath(); g.roundRect(px-8,py-8,pw+16,ph+16,18); g.fill(); g.save(); g.beginPath(); g.roundRect(px,py,pw,ph,12); g.clip();
+      for(const p of this.posts){ const y=py+p.y*ph; if(y>py+ph||y+ph<py) continue;    // procedural "reel": animated pattern, brightness = novelty
+        const t=this.t/30+p.seed; g.fillStyle=`hsl(${p.hue},45%,${8+p.nov*22}%)`; g.fillRect(px,y,pw,ph);
+        g.globalAlpha=0.35+0.65*p.nov;
+        if(p.kind===0){ for(let i=0;i<7;i++){ g.fillStyle=`hsl(${(p.hue+i*40)%360},70%,60%)`; const r=pw*0.12*(1+0.4*Math.sin(t*2+i)); g.beginPath(); g.arc(px+pw*(0.2+0.6*((i*0.37+t*0.1)%1)), y+ph*(0.2+0.6*((i*0.61+t*0.07)%1)), r,0,7); g.fill(); } }
+        else if(p.kind===1){ for(let i=0;i<10;i++){ g.fillStyle=`hsl(${(p.hue+i*25)%360},70%,${50+20*Math.sin(t*3+i)}%)`; g.fillRect(px+pw*(i/10), y+ph*0.5+Math.sin(t*2+i*0.8)*ph*0.25, pw/10-2, ph*0.1); } }
+        else { g.strokeStyle=`hsl(${(p.hue+180)%360},80%,65%)`; g.lineWidth=4; g.beginPath(); for(let i=0;i<=40;i++){ const u=i/40; const xx=px+pw*u, yy=y+ph*0.5+Math.sin(u*9+t*3)*ph*0.2*Math.cos(t+u*3); i?g.lineTo(xx,yy):g.moveTo(xx,yy); } g.stroke(); }
+        g.globalAlpha=1; g.fillStyle="rgba(255,255,255,0.8)"; g.font="12px IBM Plex Sans"; g.fillText(`novelty ${p.nov.toFixed(2)}`, px+12, y+ph-14); }
+      g.restore();
+      drawFly(g, px-58, py+ph*0.55, 1.6, Math.min(1,(hist.mbon?hist.mbon[HISTLEN-1]:0)/60), -0.35, 1);
+      g.fillStyle=cssv("--ink-mute"); g.font="12px IBM Plex Mono"; g.textAlign="left"; g.fillText(`reels advanced: ${this.score}`, 16, 24); g.fillText(`the fly watches while MBON novelty is high`, 16, 42); } },
+  /* ---- stonks: candlestick chart, position marker, the fly at the desk ------------- */
+  stonks:{ init(){ this.c=[]; let v=100; for(let i=0;i<48;i++){ const o=v; v+=Math.random()*2-1; this.c.push({o,h:Math.max(o,v)+Math.random(),l:Math.min(o,v)-Math.random(),c:v}); } this.cur={o:v,h:v,l:v,c:v,n:0}; this.pos=0; this.cash=0; this.trend=0; this.last=null; },
+    observe(){ const k=this.c.slice(-6); const rng=Math.max(...k.map(x=>x.h))-Math.min(...k.map(x=>x.l)); return {visual:Math.min(1,rng/4), dan_reward:Math.max(0,this.last||0), dan_punish:Math.max(0,-(this.last||0))}; },
+    step(a){ if(Math.random()<0.02) this.trend=(Math.random()*2-1)*0.5; const d=this.trend+Math.random()*1.2-0.6; const nv=this.cur.c+d; this.cur.c=nv; this.cur.h=Math.max(this.cur.h,nv); this.cur.l=Math.min(this.cur.l,nv); this.cur.n++;
+      if(this.cur.n>=6){ this.c.push({...this.cur}); if(this.c.length>60) this.c.shift(); this.cur={o:nv,h:nv,l:nv,c:nv,n:0}; }
+      this.pos = a.side==="buy"?1:0; const pnl=this.pos*d; this.cash+=pnl; this.last=Math.max(-1,Math.min(1,pnl)); },
+    draw(g,W,H){ const all=[...this.c,this.cur]; const lo=Math.min(...all.map(x=>x.l)), hi=Math.max(...all.map(x=>x.h)); const X=i=>W*0.08+i/(all.length)*(W*0.7), Y=v=>H*0.9-(v-lo)/(hi-lo+1e-9)*(H*0.75); const cw=Math.max(3,(W*0.7)/all.length*0.6);
+      g.strokeStyle=cssv("--rule-soft"); for(let k=0;k<=4;k++){ const y=H*0.15+k*H*0.75/4; g.beginPath(); g.moveTo(W*0.06,y); g.lineTo(W*0.8,y); g.stroke(); }
+      all.forEach((k,i)=>{ const up=k.c>=k.o; g.strokeStyle=g.fillStyle= up?cssv("--ok"):cssv("--crit"); g.beginPath(); g.moveTo(X(i),Y(k.h)); g.lineTo(X(i),Y(k.l)); g.stroke(); g.fillRect(X(i)-cw/2, Y(Math.max(k.o,k.c)), cw, Math.max(1,Math.abs(Y(k.o)-Y(k.c)))); });
+      g.fillStyle=this.pos?cssv("--ok"):cssv("--ink-mute"); g.font="600 13px IBM Plex Sans"; g.textAlign="left"; g.fillText(this.pos?"LONG":"flat", W*0.82, Y(this.cur.c)+4);
+      g.fillStyle=cssv("--ink-mute"); g.font="12px IBM Plex Mono"; g.fillText(`BTC-USDC (synthetic)  paper P&L ${this.cash>=0?"+":""}${this.cash.toFixed(1)}  ·  ${this.cur.c.toFixed(2)}`, 16, 24);
+      drawFly(g, W*0.9, H*0.72, 1.7, 0.2+0.8*(this.pos), -0.6, -1); } },
+  /* ---- doom: first-person raycast corridor; the fly is you ------------------------- */
+  doom:{ MAP:["##########","#........#","#..##....#","#..#.....#","#....#...#","#..###...#","#........#","#.#....#.#","#........#","##########"],
+    init(){ this.px=1.5;this.py=1.5;this.a=0.3; this.ex=7.5;this.ey=6.5;this.et=Math.random()*7; this.shots=0;this.hits=0;this.flash=0;this.hurt=0; },
+    wall(x,y){ const r=this.MAP[Math.floor(y)]; return !r || r[Math.floor(x)]!=="."; },
+    observe(){ const dx=this.ex-this.px, dy=this.ey-this.py; let b=Math.atan2(dy,dx)-this.a; b=Math.atan2(Math.sin(b),Math.cos(b)); const dist=Math.hypot(dx,dy); const near=Math.max(0,1-dist/7); const vis=Math.abs(b)<0.8?1:0.15;
+      return {visual_left:vis*(Math.max(0,Math.sin(-b))*0.7+near*0.3), visual_right:vis*(Math.max(0,Math.sin(b))*0.7+near*0.3), p1_command:0.4+0.6*near, dan:this.flash>0?1:0}; },
+    step(a){ this.a+=a.turn*0.09; if(a.forward){ const nx=this.px+Math.cos(this.a)*0.05, ny=this.py+Math.sin(this.a)*0.05; if(!this.wall(nx,this.py)) this.px=nx; if(!this.wall(this.px,ny)) this.py=ny; }
+      this.et+=0.02; const tx=5.5+2.5*Math.cos(this.et), ty=4.5+2*Math.sin(this.et*0.8); if(!this.wall(tx,ty)){ this.ex=tx; this.ey=ty; }
+      this.flash=Math.max(0,this.flash-1); this.hurt=Math.max(0,this.hurt-1);
+      if(a.shoot && Math.random()<0.07){ this.shots++; const dx=this.ex-this.px,dy=this.ey-this.py; let b=Math.atan2(dy,dx)-this.a; b=Math.atan2(Math.sin(b),Math.cos(b)); this.muzzle=6; if(Math.abs(b)<0.18){ this.hits++; this.flash=14; this.ex=1.5+Math.random()*7; this.ey=1.5+Math.random()*7; if(this.wall(this.ex,this.ey)){ this.ex=7.5; this.ey=6.5; } } }
+      this.muzzle=Math.max(0,(this.muzzle||0)-1); },
+    draw(g,W,H){ const cols=Math.min(240,W>>1), fov=1.05, cw=W/cols; const depth=new Float32Array(cols);
+      g.fillStyle="#141a24"; g.fillRect(0,0,W,H/2); g.fillStyle="#1b2130"; g.fillRect(0,H/2,W,H/2);
+      for(let c=0;c<cols;c++){ const ra=this.a-fov/2+fov*(c/cols); let t=0, hit=false, side=0; const sx=Math.cos(ra), sy=Math.sin(ra);
+        while(t<12&&!hit){ t+=0.02; const x=this.px+sx*t, y=this.py+sy*t; if(this.wall(x,y)){ hit=true; side=Math.abs((x%1)-0.5)>Math.abs((y%1)-0.5)?1:0; } }
+        const d=t*Math.cos(ra-this.a); depth[c]=d; const hh=Math.min(H,H*0.9/Math.max(0.2,d)); const sh=Math.max(0.12,1-d/9)*(side?0.85:1);
+        g.fillStyle=`rgb(${Math.floor(90*sh)},${Math.floor(105*sh)},${Math.floor(130*sh)})`; g.fillRect(c*cw,(H-hh)/2,cw+1,hh); }
+      // enemy sprite (billboard), depth-tested against walls
+      { const dx=this.ex-this.px, dy=this.ey-this.py; const dist=Math.hypot(dx,dy); let b=Math.atan2(dy,dx)-this.a; b=Math.atan2(Math.sin(b),Math.cos(b));
+        if(Math.abs(b)<fov/2+0.3){ const sxp=W/2+Math.tan(b)/Math.tan(fov/2)*W/2; const sz=Math.min(H,H*0.6/Math.max(0.3,dist)); const col=Math.floor(sxp/cw); if(col>=0&&col<cols&&depth[col]>dist*0.95 || col<0||col>=cols){
+          g.fillStyle=this.flash?cssv("--warn"):"#c85a50"; g.beginPath(); g.ellipse(sxp,H/2+sz*0.15,sz*0.28,sz*0.4,0,0,7); g.fill(); g.fillStyle="#f0d0a0"; g.beginPath(); g.arc(sxp-sz*0.08,H/2-sz*0.05,sz*0.05,0,7); g.arc(sxp+sz*0.08,H/2-sz*0.05,sz*0.05,0,7); g.fill(); } } }
+      // crosshair + muzzle + the fly (you) at the bottom, wings beating with P1 arousal
+      g.strokeStyle="rgba(232,236,241,0.8)"; g.lineWidth=1.5; g.beginPath(); g.moveTo(W/2-10,H/2); g.lineTo(W/2+10,H/2); g.moveTo(W/2,H/2-10); g.lineTo(W/2,H/2+10); g.stroke();
+      if(this.muzzle){ g.fillStyle=`rgba(255,220,120,${this.muzzle/8})`; g.beginPath(); g.arc(W/2,H*0.86,30+this.muzzle*4,0,7); g.fill(); }
+      drawFly(g, W/2, H*0.9, 2.6, Math.min(1,(hist.p1_command?hist.p1_command[HISTLEN-1]:0)/60), 0, 1);
+      g.fillStyle=cssv("--ink-mute"); g.font="12px IBM Plex Mono"; g.textAlign="left"; g.fillText(`shots ${this.shots}  hits ${this.hits}  ·  ViZDoom stand-in: raycast corridor, one enemy`, 16, 24); } },
+  /* ---- beatsaber: a 3D lane; the fly at the bottom with two sabers ------------------ */
   beatsaber:{ init(){ this.tiles=[]; this.t=0; this.hits=0; this.miss=0; this.swing=0; },
     observe(){ const n=this.tiles.filter(t=>t.z>0).sort((a,b)=>a.z-b.z)[0]; const loom=n?Math.max(0,1-n.z/400):0; return {visual_loom:loom, p1_command:0.6+0.4*loom}; },
     step(a){ this.t++; if(this.t%70===0) this.tiles.push({z:400,lane:Math.random()<0.5?0:1,hit:false}); for(const t of this.tiles) t.z-=3.2; this.swing=Math.max(0,this.swing-1);
       if(a.swing && this.swing===0){ this.swing=12; for(const t of this.tiles) if(!t.hit && t.z>0 && t.z<50){ t.hit=true; this.hits++; } }
       for(const t of this.tiles) if(!t.hit && t.z<-5 && !t.counted){ t.counted=true; this.miss++; } this.tiles=this.tiles.filter(t=>t.z>-40); },
-    draw(g,W,H){ const cx=W/2, hz=H*0.82; g.strokeStyle=cssv("--rule"); g.beginPath(); g.moveTo(cx-40,H*0.15); g.lineTo(cx-W*0.3,hz); g.moveTo(cx+40,H*0.15); g.lineTo(cx+W*0.3,hz); g.stroke();
-      g.strokeStyle=cssv("--accent"); g.setLineDash([6,6]); g.beginPath(); g.moveTo(cx-W*0.3,hz-10); g.lineTo(cx+W*0.3,hz-10); g.stroke(); g.setLineDash([]);
-      for(const t of this.tiles.slice().sort((a,b)=>b.z-a.z)){ const d=Math.max(0.02,t.z/400); const s=1-d; const y=H*0.15+(hz-H*0.15)*s; const w=(40+W*0.26*s); const x=cx+(t.lane?1:-1)*w*0.5; const sz=6+26*s; g.fillStyle=t.hit?cssv("--ok"):cssv("--mod"); g.globalAlpha=t.hit?0.4:0.9; g.fillRect(x-sz/2,y-sz/2,sz,sz); g.globalAlpha=1; }
-      if(this.swing){ g.strokeStyle=cssv("--warn"); g.lineWidth=5; g.beginPath(); g.moveTo(cx-W*0.28,hz+10); g.lineTo(cx+W*0.28,hz-30-this.swing*3); g.stroke(); g.lineWidth=1; }
-      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`hits ${this.hits}  missed ${this.miss}`, 24, 30); } },
+    draw(g,W,H){ const cx=W/2, hz=H*0.8, horizon=H*0.18; g.fillStyle="#141a24"; g.fillRect(0,0,W,horizon);
+      for(let i=0;i<=10;i++){ const u=i/10; const y=horizon+(hz-horizon)*u*u; g.strokeStyle=`rgba(167,139,236,${0.08+0.25*u})`; g.beginPath(); g.moveTo(cx-(40+W*0.3*u),y); g.lineTo(cx+(40+W*0.3*u),y); g.stroke(); }
+      g.strokeStyle="rgba(167,139,236,.5)"; g.beginPath(); g.moveTo(cx-40,horizon); g.lineTo(cx-W*0.3-40,hz); g.moveTo(cx+40,horizon); g.lineTo(cx+W*0.3+40,hz); g.moveTo(cx,horizon); g.lineTo(cx,hz); g.stroke();
+      g.strokeStyle=cssv("--accent"); g.setLineDash([6,6]); g.beginPath(); g.moveTo(cx-W*0.3-40,hz-8); g.lineTo(cx+W*0.3+40,hz-8); g.stroke(); g.setLineDash([]);
+      for(const t of this.tiles.slice().sort((a,b)=>b.z-a.z)){ const u=1-Math.max(0.02,t.z/400); const y=horizon+(hz-horizon)*u*u; const w=(40+W*0.3*u); const x=cx+(t.lane?1:-1)*w*0.5; const sz=6+30*u; g.fillStyle=t.hit?cssv("--ok"):(t.lane?"#e0776a":"#68a8d6"); g.globalAlpha=t.hit?0.35:0.95; g.fillRect(x-sz/2,y-sz/2,sz,sz); g.globalAlpha=1; }
+      // the fly, with two sabers; swing arcs when the wing-motor readout fires
+      const sw=this.swing/12; for(const sgn of [-1,1]){ g.strokeStyle=sgn<0?"#e0776a":"#68a8d6"; g.lineWidth=5; g.lineCap="round"; g.beginPath(); g.moveTo(cx+sgn*26,H*0.9); g.lineTo(cx+sgn*(26+70*Math.cos(0.6-sw*1.6)), H*0.9-70*Math.sin(0.6+sw*1.2)); g.stroke(); }
+      drawFly(g, cx, H*0.92, 2.4, Math.min(1,(hist.pip10?hist.pip10[HISTLEN-1]:0)/60), 0, 1);
+      g.fillStyle=cssv("--ink-mute"); g.font="12px IBM Plex Mono"; g.textAlign="left"; g.fillText(`hits ${this.hits}  missed ${this.miss}  ·  swing = wing-motor rate > 15 Hz`, 16, 24); } },
 };
+if(!CanvasRenderingContext2D.prototype.roundRect){ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){ this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r); this.arcTo(x+w,y+h,x,y+h,r); this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r); this.closePath(); }; }
 let env=null;
 function loadEnv(id){ env=ENV[id]; env.init(); document.getElementById("envnote").textContent=ENV_NOTES[id]; }
 function envTick(){
@@ -649,11 +712,78 @@ function drawArch(a){
 }
 function renderArch(){ document.getElementById("archs").innerHTML = drawArch(ARCH[DEMOS[cur].id]) + drawArch(HARNESS); }
 
+
+/* =====================================================================================
+   Brain view: the 4,000 synthetic neurons on a fly-brain layout, spikes as light.
+   ===================================================================================== */
+const bwrap=document.getElementById("brainwrap"), bcv=document.getElementById("brain");
+const br=new THREE.WebGLRenderer({canvas:bcv,antialias:true,alpha:false}); br.setPixelRatio(Math.min(devicePixelRatio,2));
+const bs=new THREE.Scene(), bcam=new THREE.PerspectiveCamera(38,1.6,0.1,100); let bsph={r:5.2,th:0.5,ph:1.25}, bdrag=null, bauto=true, bedges=true;
+const REGION = {  // centre, radii — a brain-shaped scaffold (x right, y up, z anterior)
+  central:{c:[0,0,0],r:[1.15,0.75,0.8]}, lobL:{c:[-1.55,0.05,0.05],r:[0.5,0.55,0.5]}, lobR:{c:[1.55,0.05,0.05],r:[0.5,0.55,0.5]},
+  vnc:{c:[0,-1.75,-0.2],r:[0.42,0.7,0.35]},
+};
+const SITE = {  // cell type -> where it lives (bilateral types split left/right), r = cluster radius
+  LC4:{at:[[-1.25,0.05,0.15],[1.25,0.05,0.15]],r:.12}, LC11:{at:[[-1.3,-0.05,0.25],[1.3,-0.05,0.25]],r:.12}, LC15:{at:[[-1.32,0.15,0.2],[1.32,0.15,0.2]],r:.12}, LPLC2:{at:[[-1.2,0.2,0.05],[1.2,0.2,0.05]],r:.12},
+  "KCg-m":{at:[[-0.5,0.45,-0.4],[0.5,0.45,-0.4]],r:.14}, "KCab-c":{at:[[-0.5,0.55,-0.3],[0.5,0.55,-0.3]],r:.14},
+  MBON01:{at:[[-0.45,0.2,0.45],[0.45,0.2,0.45]],r:.1}, MBON11:{at:[[-0.35,0.05,0.55],[0.35,0.05,0.55]],r:.1},
+  PAM11:{at:[[-0.3,-0.2,0.6],[0.3,-0.2,0.6]],r:.1}, PPL101:{at:[[-0.7,0.3,-0.45],[0.7,0.3,-0.45]],r:.1},
+  P1_a:{at:[[-0.85,0.35,0.1],[0.85,0.35,0.1]],r:.12}, pC1:{at:[[-0.75,0.25,0.2],[0.75,0.25,0.2]],r:.1},
+  pIP10:{at:[[0,-0.45,-0.55]],r:.08}, DNa02:{at:[[-0.15,-0.6,-0.5],[0.15,-0.6,-0.5]],r:.07}, DNp09:{at:[[-0.1,-0.7,-0.4],[0.1,-0.7,-0.4]],r:.07},
+  hg1:{at:[[-0.25,-1.6,-0.1],[0.25,-1.6,-0.1]],r:.1}, hg2:{at:[[-0.3,-1.8,-0.2],[0.3,-1.8,-0.2]],r:.1}, hg3:{at:[[-0.2,-2.0,-0.25],[0.2,-2.0,-0.25]],r:.1},
+};
+const prng=mulberry32(7); const gauss=()=>{ const u=1-prng(),v=prng(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+function inRegion(reg){ const {c,r}=reg; while(true){ const p=[prng()*2-1,prng()*2-1,prng()*2-1]; if(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]<=1) return [c[0]+p[0]*r[0], c[1]+p[1]*r[1], c[2]+p[2]*r[2]]; } }
+const bpos=new Float32Array(N*3), bcol=new Float32Array(N*3), bglow=new Float32Array(N), bbase=new Float32Array(N*3);
+const typeIdx={}; C.cellType.forEach((c,i)=>{ (typeIdx[c] ||= []).push(i); });
+for (let i=0;i<N;i++){ const ct=C.cellType[i]; let p;
+  if (SITE[ct]){ const s=SITE[ct]; const k=typeIdx[ct].indexOf(i); const at=s.at[k % s.at.length]; p=[at[0]+gauss()*s.r*0.5, at[1]+gauss()*s.r*0.5, at[2]+gauss()*s.r*0.5]; }
+  else { const u=prng(); p = u<0.62 ? inRegion(REGION.central) : u<0.78 ? inRegion(REGION.lobL) : u<0.94 ? inRegion(REGION.lobR) : inRegion(REGION.vnc); }
+  bpos.set(p,i*3); }
+const bgeo=new THREE.BufferGeometry(); bgeo.setAttribute("position",new THREE.BufferAttribute(bpos,3)); bgeo.setAttribute("color",new THREE.BufferAttribute(bcol,3));
+const bpts=new THREE.Points(bgeo,new THREE.PointsMaterial({size:0.045,vertexColors:true,sizeAttenuation:true,transparent:true,opacity:0.95})); bs.add(bpts);
+// wiring: every demo-pathway edge, plus a subsample of the background graph
+let elines=null;
+function buildEdges(){
+  const segs=[], ecol=[]; const push=(i,j,c,a)=>{ segs.push(bpos[i*3],bpos[i*3+1],bpos[i*3+2],bpos[j*3],bpos[j*3+1],bpos[j*3+2]); ecol.push(c[0]*a,c[1]*a,c[2]*a,c[0]*a,c[1]*a,c[2]*a); };
+  const hexc=h=>{ const n=parseInt(h.slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; };
+  const path=hexc(cssv("--accent")), bg=hexc(cssv("--ink-mute"));
+  const isDemo=new Uint8Array(N); for(const ct of CELL_TYPES) for(const i of typeIdx[ct]) isDemo[i]=1;
+  let nb=0; for (let i=0;i<N;i++){ for (let k=C.rowPtr[i];k<C.rowPtr[i+1];k++){ const j=C.colIdx[k]; if (isDemo[i]&&isDemo[j]&&C.val[k]===PATHWAY_W){ if (prng()<0.12) push(i,j,path,0.55); } else if (nb<1400 && prng()<0.006){ push(i,j,bg,0.22); nb++; } } }
+  const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(segs,3)); g.setAttribute("color",new THREE.Float32BufferAttribute(ecol,3));
+  if (elines) bs.remove(elines); elines=new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending})); bs.add(elines);
+}
+function brainColors(){
+  const hexc=h=>{ const n=parseInt(h.slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; };
+  const dim=hexc(cssv("--ink-mute")).map(v=>v*0.42), roleC={}; for (const r in ROLE_COL) roleC[r]=hexc(cssv(ROLE_COL[r].slice(4,-1)));
+  const roleOf={}; if (spec) for (const [name,cts,role] of spec.pops) for (const c of cts) roleOf[c]=role;
+  for (let i=0;i<N;i++){ const r=roleOf[C.cellType[i]]; const c = r ? roleC[r] : dim; bbase.set(c,i*3); }
+  buildEdges();
+  document.getElementById("brainkey").innerHTML = spec ? spec.pops.map(([name,,role])=>`<i style="--rc:${ROLE_COL[role]}"><b></b>${name}</i>`).join("")+`<i><b style="background:var(--ink-mute)"></b>unlabelled</i>` : "";
+}
+function brainFrame(){
+  // spikes this frame light their neuron; glow decays over ~12 frames
+  for (let i=0;i<N;i++){ if (net.spikeCount[i]) bglow[i]=1; else bglow[i]*=0.86; const g=bglow[i], b=i*3;
+    bcol[b]=Math.min(1,bbase[b]*(0.55+0.45*g)+g*0.9); bcol[b+1]=Math.min(1,bbase[b+1]*(0.55+0.45*g)+g*0.9); bcol[b+2]=Math.min(1,bbase[b+2]*(0.55+0.45*g)+g*0.9); }
+  bgeo.attributes.color.needsUpdate=true;
+  if (bauto && !bdrag) bsph.th+=0.0035;
+  const {r,th,ph}=bsph; bcam.position.set(r*Math.sin(ph)*Math.sin(th), -0.5+r*Math.cos(ph), r*Math.sin(ph)*Math.cos(th)); bcam.lookAt(0,-0.5,0);
+  const w=bwrap.clientWidth,h=bwrap.clientHeight; if (bcv.width!==Math.floor(w*br.getPixelRatio())){ br.setSize(w,h,false); bcam.aspect=w/h; bcam.updateProjectionMatrix(); }
+  br.setClearColor(new THREE.Color(cssv("--sunken")),1); br.render(bs,bcam);
+  document.getElementById("brainlabel").textContent = `${spec?DEMOS[cur].name:""} · ${(elines?elines.geometry.attributes.position.count/2:0).toLocaleString()} edges drawn of ${C.nnz.toLocaleString()}`;
+}
+bcv.addEventListener("pointerdown",e=>{ bdrag={x:e.clientX,y:e.clientY}; bcv.setPointerCapture(e.pointerId); });
+bcv.addEventListener("pointerup",()=>{ bdrag=null; });
+bcv.addEventListener("pointermove",e=>{ if(!bdrag) return; bsph.th-=(e.clientX-bdrag.x)*0.008; bsph.ph=Math.min(Math.PI-0.1,Math.max(0.1,bsph.ph-(e.clientY-bdrag.y)*0.008)); bdrag.x=e.clientX; bdrag.y=e.clientY; });
+bcv.addEventListener("wheel",e=>{ e.preventDefault(); bsph.r=Math.min(12,Math.max(2,bsph.r*Math.exp(e.deltaY*0.0012))); },{passive:false});
+document.getElementById("edgesbtn").addEventListener("click",e=>{ bedges=!bedges; e.target.setAttribute("aria-pressed",String(bedges)); if(elines) elines.visible=bedges; });
+document.getElementById("autobtn").addEventListener("click",e=>{ bauto=!bauto; e.target.setAttribute("aria-pressed",String(bauto)); });
+
 // ---- loop --------------------------------------------------------------------------------
 let lastPaint = 0;
 function tick(now){
   if (running){
-    const rates = frame(); paintCircuit(rates); paintRaster(); envTick();
+    const rates = frame(); paintCircuit(rates); paintRaster(); envTick(); brainFrame();
     if (now - lastPaint > 90){ paintTraces(); lastPaint = now;
       document.getElementById("act2").textContent = JSON.stringify(actionNow);
       document.getElementById("lstat").textContent = `${(simTime).toFixed(1)} s of brain time · frame ${frames} · ${N.toLocaleString()} neurons · ${C.nnz.toLocaleString()} synaptic edges · dt 0.1 ms`; }
