@@ -1,0 +1,147 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MaleCNS Cinema</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../shared/lif.js"></script><script src="../shared/env.js"></script>
+<style>
+:root{--ground:#05070b;--surface:#10141c;--surface-2:#171d28;--sunken:#0a0d12;--ink:#e8ecf1;--ink-soft:#b0bac6;--ink-mute:#7b8896;--rule:#2a323d;--rule-soft:#212832;--ok:#5fb98d;--warn:#d3a03a;--crit:#e0776a;--accent:#5fb98d;
+ --serif:"Spectral",Georgia,serif;--sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:13px;overflow:hidden}
+.stage{position:absolute;inset:0;display:grid;place-items:center}
+canvas#out{display:block;background:#000;box-shadow:0 0 0 1px var(--rule)}
+.panel{position:absolute;left:14px;top:14px;width:290px;max-height:calc(100% - 28px);overflow:auto;background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--rule);border-radius:3px;padding:12px 13px;display:grid;gap:9px}
+.panel h1{font-family:var(--serif);font-size:17px;font-weight:600;margin:0}
+.panel .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
+.panel .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-top:3px}
+.row{display:flex;flex-wrap:wrap;gap:5px}
+.row button,.panel select{font:inherit;font-size:11.5px;cursor:pointer;background:var(--surface-2);border:1px solid var(--rule);border-radius:2px;padding:4px 9px;color:var(--ink)}
+.row button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.row button.rec[aria-pressed="true"]{border-color:var(--crit);color:var(--crit)}
+label{display:grid;gap:2px;font-size:11.5px;color:var(--ink-soft)} input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.stat{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);line-height:1.6;font-variant-numeric:tabular-nums} .stat b{color:var(--ink);font-weight:500}
+.note{font-size:11px;color:var(--ink-mute);line-height:1.45}
+a{color:var(--accent)}
+.hide .panel{display:none}
+.tip{position:absolute;right:14px;bottom:12px;font-family:var(--mono);font-size:10px;color:var(--ink-mute)}
+</style></head><body>
+<div class="stage"><canvas id="out"></canvas></div>
+<div class="panel" id="panel">
+  <div><div class="eyebrow">maleCNS v1.0 · cinema</div><h1>The fly's whole nervous system, running</h1></div>
+  <div class="stat" id="stat">loading 142,757 somata…</div>
+  <div class="k">demo</div><div class="row" id="demos"></div>
+  <div class="k">camera</div><div class="row" id="cams"></div>
+  <div class="k">frame</div><div class="row" id="aspects"></div>
+  <label><span class="k">wiring drawn</span><input type="range" id="wire" min="0" max="1" step="0.01" value="0.35"></label>
+  <label><span class="k">glow</span><input type="range" id="glow" min="0.3" max="2.5" step="0.05" value="0.9"></label>
+  <label><span class="k">ambient flicker (unsimulated neurons)</span><input type="range" id="amb" min="0" max="1" step="0.01" value="0.35"></label>
+  <div class="row"><button id="capbtn" aria-pressed="true">captions</button><button id="pipbtn" aria-pressed="true">game inset</button><button id="edgesbtn" aria-pressed="true">wiring</button></div>
+  <div class="k">export</div>
+  <div class="row"><button class="rec" id="recbtn" aria-pressed="false">● record</button><button id="snapbtn">snapshot png</button><button id="hidebtn">hide panel (h)</button></div>
+  <div class="stat" id="recstat"></div>
+  <div class="note">Real MaleCNS v1.0 soma positions and connectivity (HHMI Janelia FlyEM, CC BY 4.0). The demo populations are the real cells of those types, lit by the harness's LIF running on its synthetic graph; everything else flickers ambiently and is not simulated. <a href="../">← control room</a></div>
+</div>
+<div class="tip">drag to orbit · scroll to zoom · h hides the panel</div>
+<script>
+/* ---------- data ---------------------------------------------------------------- */
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const CLASS_COL={ol_intrinsic:"#2fb5a6",cb_intrinsic:"#8f7be6",vnc_intrinsic:"#d3a03a",visual_projection:"#4fd1e0",vnc_sensory:"#c9ad69",ol_sensory:"#69c9a9",cb_sensory:"#a9c969",ascending_neuron:"#e0a06a",descending_neuron:"#e06ab5",vnc_motor:"#e0776a",visual_centrifugal:"#6ab5e0",sensory_ascending:"#c9c969",cb_motor:"#e0776a",vnc_efferent:"#e08c6a",cb_endocrine:"#e0d06a",unknown:"#7b8896"};
+let D=null;
+async function load(){
+  let resp=null; for (const u of ["../data/malecns_v1.bin","../../data/malecns_v1.bin"]){ try { const r0=await fetch(u); if (r0.ok){ resp=r0; break; } } catch(e){} } if(!resp) throw new Error("malecns_v1.bin not found"); const buf=await resp.arrayBuffer(); const dv=new DataView(buf); const hl=dv.getUint32(0,true); const H=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))); let o=4+hl;
+  const n=H.n; const q=new Uint16Array(buf,o,n*3); o+=n*6; const cls=new Uint8Array(buf,o,n); o+=n; const side=new Uint8Array(buf,o,n); o+=n; const e=H.e; const edges=new Uint32Array(buf.slice(o,o+e*8)); o+=e*8; const ew=new Uint16Array(buf.slice(o,o+e*2));
+  const lo=H.bbox[0], hi=H.bbox[1]; const pos=new Float32Array(n*3);
+  // orient: the long axis (z in EM space) runs brain -> nerve cord; put the brain at the top
+  const ci=H.classes.indexOf("ol_intrinsic"), vi=H.classes.indexOf("vnc_intrinsic"); let zo=0,zv=0,no=0,nv=0;
+  for(let i=0;i<n;i++){ if(cls[i]===ci){ zo+=q[i*3+2]; no++; } else if(cls[i]===vi){ zv+=q[i*3+2]; nv++; } }
+  const brainLowZ = (zo/no) < (zv/nv);
+  const sc=[(hi[0]-lo[0])/65535,(hi[1]-lo[1])/65535,(hi[2]-lo[2])/65535]; const mid=[(hi[0]+lo[0])/2,(hi[1]+lo[1])/2,(hi[2]+lo[2])/2]; const S=1/(hi[2]-lo[2])*1.9;  // long axis ≈ 1.9 units
+  for(let i=0;i<n;i++){ const x=(lo[0]+q[i*3]*sc[0]-mid[0])*S, y=(lo[1]+q[i*3+1]*sc[1]-mid[1])*S, z=(lo[2]+q[i*3+2]*sc[2]-mid[2])*S; pos[i*3]=x; pos[i*3+1]=brainLowZ?-z:z; pos[i*3+2]=y; }
+  D={H,n,pos,cls,side,edges,ew,e}; return D;
+}
+/* ---------- scene ---------------------------------------------------------------- */
+const gl=document.createElement("canvas"); const r=new THREE.WebGLRenderer({canvas:gl,antialias:false,alpha:false,preserveDrawingBuffer:true}); r.setPixelRatio(1);
+const scene=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(34,1.78,0.05,60);
+const out=document.getElementById("out"), og=out.getContext("2d");
+let pts,pgeo,pcol,base,glow,lines,ecol,egeo, sph={r:4.0,th:0.4,ph:1.45}, drag=null, mode="orbit", t0=performance.now(), aspect=[16,9], edgesOn=true, pip=true, caps=true;
+function sprite(){ const c=document.createElement("canvas"); c.width=c.height=64; const g=c.getContext("2d"); const gr=g.createRadialGradient(32,32,0,32,32,32); gr.addColorStop(0,"rgba(255,255,255,1)"); gr.addColorStop(0.25,"rgba(255,255,255,0.55)"); gr.addColorStop(1,"rgba(255,255,255,0)"); g.fillStyle=gr; g.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); return t; }
+function build(){
+  const n=D.n; pcol=new Float32Array(n*3); base=new Float32Array(n*3); glow=new Float32Array(n);
+  const hexc=h=>{ const v=parseInt(h.slice(1),16); return [(v>>16&255)/255,(v>>8&255)/255,(v&255)/255]; };
+  const classCols=D.H.classes.map(c=>hexc(CLASS_COL[c]||CLASS_COL.unknown));
+  for(let i=0;i<n;i++){ const c=classCols[D.cls[i]]; base[i*3]=c[0]*0.07; base[i*3+1]=c[1]*0.07; base[i*3+2]=c[2]*0.07; }
+  pgeo=new THREE.BufferGeometry(); pgeo.setAttribute("position",new THREE.BufferAttribute(D.pos,3)); pgeo.setAttribute("color",new THREE.BufferAttribute(pcol,3));
+  pts=new THREE.Points(pgeo,new THREE.PointsMaterial({size:0.016,map:sprite(),vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true})); scene.add(pts);
+  // edges sorted by weight; the slider chooses how many of the strongest to draw
+  const order=Array.from({length:D.e},(_,i)=>i).sort((a,b)=>D.ew[b]-D.ew[a]); D.order=order;
+  const segs=new Float32Array(D.e*6); ecol=new Float32Array(D.e*6);
+  for(let k=0;k<D.e;k++){ const i=D.edges[order[k]*2], j=D.edges[order[k]*2+1]; segs.set([D.pos[i*3],D.pos[i*3+1],D.pos[i*3+2],D.pos[j*3],D.pos[j*3+1],D.pos[j*3+2]],k*6);
+    const a=classCols[D.cls[i]], b=classCols[D.cls[j]]; const w=Math.min(1,0.15+Math.log2(1+D.ew[order[k]])/12); ecol.set([a[0]*w,a[1]*w,a[2]*w,b[0]*w,b[1]*w,b[2]*w],k*6); }
+  egeo=new THREE.BufferGeometry(); egeo.setAttribute("position",new THREE.BufferAttribute(segs,3)); egeo.setAttribute("color",new THREE.BufferAttribute(ecol,3));
+  lines=new THREE.LineSegments(egeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.07,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(lines); setWire(+document.getElementById("wire").value);
+  // sim populations -> real neurons of the same type (round-robin over the synthetic 24 per type)
+  D.mirror=[]; for (const type of CELL_TYPES){ const real=D.H.pops[type]||[]; const syn=C.byType[type]; real.forEach((ri,k)=>D.mirror.push([ri, syn[k%syn.length]])); }
+}
+function setWire(f){ if(!egeo) return; egeo.setDrawRange(0, Math.floor(D.e*f*f)*2); }
+/* ---------- sim (shared lif.js) ------------------------------------------------- */
+const C=buildConnectome(0), net=new LIF(C); let spec=null, popIdx={}, stim={}, hist={}, actionNow={}, env=null; const HISTLEN=240;
+function loadDemo(id){ spec=SPECS[id]; popIdx={}; hist={}; stim={}; for(const [name,cts] of spec.pops){ popIdx[name]=cts.flatMap(c=>C.byType[c]); hist[name]=new Float32Array(HISTLEN); } for(const [name] of spec.stim) stim[name]=0.8; net.reset(); env=ENV[id]; env.init(); curDemo=id; renderDemos(); }
+let curDemo="doom";
+function simFrame(){ const ext=new Float32Array(N); for(const [name,cts,role,drive] of spec.pops){ if(!drive) continue; for(const i of popIdx[name]) ext[i]=(stim[name]||0)*drive; }
+  const w=net.advance(spec.frame,ext); const rates={}; for(const [name] of spec.pops){ const idx=popIdx[name]; let s=0; for(const i of idx) s+=net.spikeCount[i]; rates[name]=s/(idx.length*w); hist[name].copyWithin(0,1); hist[name][HISTLEN-1]=rates[name]; }
+  actionNow=spec.decode(rates); const o=env.observe(actionNow); for(const k in o) if(k in stim) stim[k]=Math.max(0,Math.min(1,o[k])); env.step(actionNow); return rates; }
+/* ---------- per-frame ------------------------------------------------------------ */
+const pipc=document.createElement("canvas"); const pg=pipc.getContext("2d");
+let rec=null, recChunks=[], recStart=0, fpsT=0, fpsN=0, fps=0;
+function frame(now){
+  if(!D){ requestAnimationFrame(frame); return; }
+  const rates=simFrame(); const activity=Math.min(1, Object.values(rates).reduce((a,b)=>a+b,0)/(spec.pops.length*40));
+  // light real neurons from their synthetic mirror; decay
+  const gmul=+document.getElementById("glow").value, amb=+document.getElementById("amb").value;
+  for(let i=0;i<D.n;i++) glow[i]*=0.88;
+  for(const [ri,si] of D.mirror) if(net.spikeCount[si]) glow[ri]=1;
+  const nAmb=Math.floor(D.n*0.0025*amb*(0.3+activity)); for(let k=0;k<nAmb;k++){ const i=(Math.random()*D.n)|0; if(glow[i]<0.35) glow[i]=0.35; }
+  for(let i=0;i<D.n;i++){ const g=glow[i], b=i*3; const m=0.6*gmul+g*3.0*gmul; pcol[b]=Math.min(1,base[b]*m+g*0.7*gmul); pcol[b+1]=Math.min(1,base[b+1]*m+g*0.7*gmul); pcol[b+2]=Math.min(1,base[b+2]*m+g*0.7*gmul); }
+  pgeo.attributes.color.needsUpdate=true;
+  // camera
+  const T=(now-t0)/1000; if(!drag){ if(mode==="orbit") sph.th+=0.0028; else if(mode==="dolly"){ sph.r=4.6-1.9*(0.5-0.5*Math.cos(T*0.25)); sph.th+=0.0012; } else if(mode==="sweep"){ sph.th=0.4+Math.sin(T*0.18)*1.2; sph.ph=1.35+Math.sin(T*0.11)*0.35; } else if(mode==="top"){ sph.ph=0.25; sph.th+=0.002; } }
+  const look=new THREE.Vector3(0,-0.02,0); cam.position.set(look.x+sph.r*Math.sin(sph.ph)*Math.sin(sph.th), look.y+sph.r*Math.cos(sph.ph), look.z+sph.r*Math.sin(sph.ph)*Math.cos(sph.th)); cam.lookAt(look);
+  // output frame sized to the aspect preset
+  const vw=innerWidth, vh=innerHeight; let W=Math.min(1920, vw-28), Hh=W*aspect[1]/aspect[0]; if(Hh>vh-28){ Hh=vh-28; W=Hh*aspect[0]/aspect[1]; } W|=0; Hh|=0;
+  if(out.width!==W*2||out.height!==Hh*2){ out.width=W*2; out.height=Hh*2; out.style.width=W+"px"; out.style.height=Hh+"px"; r.setSize(W*2,Hh*2,false); cam.aspect=W/Hh; cam.updateProjectionMatrix(); }
+  r.setClearColor(0x05070b,1); r.render(scene,cam);
+  og.setTransform(1,0,0,1,0,0); og.drawImage(gl,0,0);
+  // game inset + captions, drawn into the output so recordings carry them
+  const s2=2; if(pip){ const pw=Math.floor(W*0.3)*s2, ph=Math.floor(pw*7/16); if(pipc.width!==pw){ pipc.width=pw; pipc.height=ph; } pg.setTransform(1,0,0,1,0,0); pg.fillStyle="#0a0d12"; pg.fillRect(0,0,pw,ph); env.draw(pg,pw,ph); og.globalAlpha=0.94; og.drawImage(pipc, W*s2-pw-24, Hh*s2-ph-24); og.globalAlpha=1; og.strokeStyle="rgba(255,255,255,0.18)"; og.strokeRect(W*s2-pw-24, Hh*s2-ph-24, pw, ph); }
+  if(caps){ og.fillStyle="rgba(232,236,241,0.92)"; og.font=`600 ${Math.round(W*0.026)*s2}px Spectral, Georgia, serif`; og.textAlign="left"; og.fillText(DEMOS_TITLE[curDemo], 28*s2, 44*s2);
+    og.font=`${Math.round(W*0.011)*s2}px "IBM Plex Mono", monospace`; og.fillStyle="rgba(176,186,198,0.9)"; og.fillText(`MaleCNS v1.0 · ${D.n.toLocaleString()} neurons · ${(egeo.drawRange.count/2).toLocaleString()} of ${D.e.toLocaleString()} connections drawn · HHMI Janelia FlyEM, CC BY 4.0`, 28*s2, 66*s2);
+    og.fillText(JSON.stringify(actionNow), 28*s2, Hh*s2-24*s2); }
+  fpsN++; if(now-fpsT>500){ fps=fpsN*1000/(now-fpsT); fpsN=0; fpsT=now; }
+  document.getElementById("stat").innerHTML=`<b>${D.n.toLocaleString()}</b> neurons · <b>${(egeo.drawRange.count/2).toLocaleString()}</b> edges drawn · <b>${fps.toFixed(0)}</b> fps · frame ${W}×${Hh}`;
+  if(rec) document.getElementById("recstat").innerHTML=`<b style="color:var(--crit)">● recording</b> ${((now-recStart)/1000).toFixed(1)} s`;
+  requestAnimationFrame(frame);
+}
+const DEMOS_TITLE={doomscroll:"The fly doomscrolling",stonks:"The fly trading stocks",doom:"The fly playing Doom",beatsaber:"The fly playing Beat Saber"};
+function renderDemos(){ document.getElementById("demos").innerHTML=Object.keys(DEMOS_TITLE).map(k=>`<button data-d="${k}" aria-pressed="${k===curDemo}">${k}</button>`).join(""); document.querySelectorAll("#demos button").forEach(b=>b.addEventListener("click",()=>loadDemo(b.dataset.d))); }
+document.getElementById("cams").innerHTML=["orbit","dolly","sweep","top","still"].map(k=>`<button data-m="${k}" aria-pressed="${k===mode}">${k}</button>`).join("");
+document.querySelectorAll("#cams button").forEach(b=>b.addEventListener("click",()=>{ mode=b.dataset.m; document.querySelectorAll("#cams button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); }));
+const ASP={"16:9":[16,9],"9:16":[9,16],"1:1":[1,1],"4:5":[4,5]}; document.getElementById("aspects").innerHTML=Object.keys(ASP).map(k=>`<button data-a="${k}" aria-pressed="${k==="16:9"}">${k}</button>`).join("");
+document.querySelectorAll("#aspects button").forEach(b=>b.addEventListener("click",()=>{ aspect=ASP[b.dataset.a]; document.querySelectorAll("#aspects button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); }));
+document.getElementById("wire").addEventListener("input",e=>setWire(+e.target.value));
+document.getElementById("edgesbtn").addEventListener("click",e=>{ edgesOn=!edgesOn; lines.visible=edgesOn; e.target.setAttribute("aria-pressed",String(edgesOn)); });
+document.getElementById("pipbtn").addEventListener("click",e=>{ pip=!pip; e.target.setAttribute("aria-pressed",String(pip)); });
+document.getElementById("capbtn").addEventListener("click",e=>{ caps=!caps; e.target.setAttribute("aria-pressed",String(caps)); });
+document.getElementById("hidebtn").addEventListener("click",()=>document.body.classList.toggle("hide")); window.addEventListener("keydown",e=>{ if(e.key==="h") document.body.classList.toggle("hide"); });
+document.getElementById("snapbtn").addEventListener("click",()=>{ const a=document.createElement("a"); a.download=`malecns-${curDemo}-${Date.now()}.png`; a.href=out.toDataURL("image/png"); a.click(); });
+document.getElementById("recbtn").addEventListener("click",e=>{
+  if(rec){ rec.stop(); return; }
+  const stream=out.captureStream(60); const mime=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm","video/mp4"].find(m=>MediaRecorder.isTypeSupported(m));
+  rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:12_000_000}); recChunks=[]; rec.ondataavailable=ev=>{ if(ev.data.size) recChunks.push(ev.data); };
+  rec.onstop=()=>{ const blob=new Blob(recChunks,{type:mime}); const a=document.createElement("a"); a.download=`malecns-${curDemo}-${aspect.join("x")}-${Date.now()}.${mime.includes("mp4")?"mp4":"webm"}`; a.href=URL.createObjectURL(blob); a.click(); document.getElementById("recstat").innerHTML=`saved ${(blob.size/1e6).toFixed(1)} MB (${mime})`; rec=null; e.target.setAttribute("aria-pressed","false"); e.target.textContent="● record"; };
+  rec.start(250); recStart=performance.now(); e.target.setAttribute("aria-pressed","true"); e.target.textContent="■ stop";
+});
+out.addEventListener("pointerdown",e=>{ drag={x:e.clientX,y:e.clientY}; out.setPointerCapture(e.pointerId); }); out.addEventListener("pointerup",()=>{ drag=null; });
+out.addEventListener("pointermove",e=>{ if(!drag) return; sph.th-=(e.clientX-drag.x)*0.006; sph.ph=Math.min(Math.PI-0.1,Math.max(0.1,sph.ph-(e.clientY-drag.y)*0.006)); drag.x=e.clientX; drag.y=e.clientY; });
+out.addEventListener("wheel",e=>{ e.preventDefault(); sph.r=Math.min(12,Math.max(1.2,sph.r*Math.exp(e.deltaY*0.0012))); },{passive:false});
+if(!CanvasRenderingContext2D.prototype.roundRect){ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,rr){ this.moveTo(x+rr,y); this.arcTo(x+w,y,x+w,y+h,rr); this.arcTo(x+w,y+h,x,y+h,rr); this.arcTo(x,y+h,x,y,rr); this.arcTo(x,y,x+w,y,rr); this.closePath(); }; }
+loadDemo("doom"); load().then(()=>{ build(); requestAnimationFrame(frame); }).catch(e=>{ document.getElementById("stat").textContent="failed to load data: "+e.message; });
+</script></body></html>
