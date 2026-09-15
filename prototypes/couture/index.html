@@ -1,0 +1,130 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Couture Workshop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../shared/proto.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script></head><body>
+<div class="app">
+  <div class="bar">
+    <div><div class="eyebrow">viture · couture · browser prototype</div><h1>Couture Workshop</h1></div>
+    <div class="sp"></div>
+    <span class="stat" id="latstat">input <b>mouse</b></span>
+    <span class="stat" id="simstat"></span>
+    <select id="fabric"><option value="silk">silk</option><option value="jersey">jersey</option><option value="denim">denim</option></select>
+    <button id="resetbtn">new panel</button>
+    <button id="cambtn" aria-pressed="false">webcam hands</button>
+    <a href="../">← all prototypes</a>
+  </div>
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><div class="card">
+      <b>A panel draped on a dress form. XPBD, 40 × 40 particles.</b>
+      <div><span class="k">pin / drag</span> PINCH a point of fabric and move it — mouse: left-drag.<br>
+      <span class="k">cut</span> TRACE a line across the fabric — mouse: shift + drag. Cuts are grid-aligned: a cut deletes constraints, so the solver never sees a topology change.<br>
+      <span class="k">gather</span> FIST near the fabric bunches it — mouse: right-click near it.<br>
+      <span class="k">smooth</span> PALM_PUSH presses a drape flat — mouse: wheel over it.<br>
+      <span class="k">bias</span> SPREAD both hands stretches on the bias.<br>
+      <span class="k">orbit</span> mouse: right-drag away from the fabric.</div>
+      <div id="hudstat" style="font-family:var(--mono);font-size:10.5px;color:var(--ink-mute)"></div>
+    </div></div>
+    <div class="cursor" id="cur"></div><div class="cursor left" id="curL" hidden></div>
+    <div class="cam" id="cam" hidden><span class="cl">camera</span></div>
+    <div class="foot">Grid cuts quantise to one cell (~1.6 cm on a 60 cm panel at 40×40) — pinking shears, not a scalpel. The notes say that is a taste call, testable with a mouse. This is that test.</div>
+  </div>
+</div>
+<script src="../shared/hands.js"></script>
+<script>
+const canvas=document.getElementById("c"), hands=createHands({mirror:true, bounds:canvas});
+const renderer=new THREE.WebGLRenderer({canvas, antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0a0d12);
+const camera=new THREE.PerspectiveCamera(40,1,0.05,50); let camTh=0.4, camPh=1.25, camR=2.4; const target=new THREE.Vector3(0,0.05,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0x334455,0.9)); const key=new THREE.DirectionalLight(0xffffff,0.8); key.position.set(1.5,2.5,1.2); scene.add(key);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(1.4,48), new THREE.MeshStandardMaterial({color:0x171c24, roughness:1})); floor.rotation.x=-Math.PI/2; floor.position.y=-0.9; scene.add(floor);
+/* dress form: a stack of spheres. Collision uses the same spheres, so what you see is what the cloth feels. */
+const FORM=[[0,0.62,0,0.11],[0,0.45,0,0.16],[0,0.30,0,0.19],[0,0.15,0,0.18],[0,0.0,0,0.16],[0,-0.15,0,0.17],[0,-0.30,0,0.19],[0,-0.45,0,0.17],[0,-0.6,0,0.12]];
+const formMat=new THREE.MeshStandardMaterial({color:0x2a323d, roughness:0.85});
+for (const [x,y,z,r] of FORM){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,28,20), formMat); m.position.set(x,y,z); scene.add(m); }
+const stand=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.3,12), formMat); stand.position.y=-0.75; scene.add(stand);
+
+/* ---- cloth ------------------------------------------------------------------------- */
+const NX=40, NY=40, SIZE=0.62; let n=NX*NY, pos, prev, invM, cons, colors, mesh, geo, pinned=new Map();
+const FABRIC={ silk:{stretch:0, shear:6e-4, bend:8e-3, damp:0.995, mass:1, color:0xa78bec}, jersey:{stretch:1.5e-4, shear:3e-3, bend:1.5e-2, damp:0.99, mass:1.1, color:0x5fb98d}, denim:{stretch:0, shear:3e-5, bend:8e-4, damp:0.985, mass:1.6, color:0x68a8d6} };
+let fab=FABRIC.silk, bias=1, CA,CB,CR,CT,CAL;
+function build(){
+  pos=new Float32Array(n*3); prev=new Float32Array(n*3); invM=new Float32Array(n).fill(1/fab.mass); cons=[]; pinned.clear();
+  for (let j=0;j<NY;j++) for (let i=0;i<NX;i++){ const k=j*NX+i; pos[k*3]=(i/(NX-1)-0.5)*SIZE; pos[k*3+1]=0.78-j/(NY-1)*SIZE*0.15; pos[k*3+2]=0.22+(j/(NY-1))*SIZE*0.9; }   // hangs off the front shoulder line
+  prev.set(pos);
+  const add=(a,b,type)=>{ const d=Math.hypot(pos[a*3]-pos[b*3],pos[a*3+1]-pos[b*3+1],pos[a*3+2]-pos[b*3+2]); cons.push({a,b,rest:d,type,alive:true}); };
+  for (let j=0;j<NY;j++) for (let i=0;i<NX;i++){ const k=j*NX+i; if(i<NX-1) add(k,k+1,"stretch"); if(j<NY-1) add(k,k+NX,"stretch"); if(i<NX-1&&j<NY-1){ add(k,k+NX+1,"shear"); add(k+1,k+NX,"shear"); } if(i<NX-2) add(k,k+2,"bend"); if(j<NY-2) add(k,k+2*NX,"bend"); }
+  // typed mirrors for the solver; `cons` stays the source of truth for cutting
+  CA=new Int32Array(cons.map(c=>c.a)); CB=new Int32Array(cons.map(c=>c.b)); CR=new Float32Array(cons.map(c=>c.rest)); CT=new Uint8Array(cons.map(c=>c.type==="stretch"?0:c.type==="shear"?1:2)); CAL=new Uint8Array(cons.length).fill(1);
+  for (let i=0;i<NX;i+=2) pinned.set(i, [pos[i*3],pos[i*3+1],pos[i*3+2]]);        // pinned along the top edge to start, like a panel on the shoulder
+  if (mesh) scene.remove(mesh);
+  geo=new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos,3));
+  const idx=[]; for (let j=0;j<NY-1;j++) for (let i=0;i<NX-1;i++){ const k=j*NX+i; idx.push(k,k+NX,k+1, k+1,k+NX,k+NX+1); } geo.setIndex(idx); geo.computeVertexNormals();
+  mesh=new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:fab.color, side:THREE.DoubleSide, roughness:0.7, metalness:0.02})); scene.add(mesh);
+  cutCount=0;
+}
+let cutCount=0;
+function rebuildIndex(){ // drop triangles that lost a structural edge, so cuts open visually
+  const alive=new Set(); for (const c of cons) if (c.alive && c.type==="stretch") alive.add(c.a<c.b?c.a+"-"+c.b:c.b+"-"+c.a);
+  const ok=(a,b)=>alive.has(a<b?a+"-"+b:b+"-"+a);
+  const idx=[]; for (let j=0;j<NY-1;j++) for (let i=0;i<NX-1;i++){ const k=j*NX+i; if(ok(k,k+1)&&ok(k,k+NX)) idx.push(k,k+NX,k+1); if(ok(k+1,k+NX+1)&&ok(k+NX,k+NX+1)) idx.push(k+1,k+NX,k+NX+1); } geo.setIndex(idx);
+}
+function step(dt, sub){
+  const h=dt/sub, g=-3.5;
+  for (let s=0;s<sub;s++){
+    for (let k=0;k<n;k++){ if (invM[k]===0) continue; const vx=(pos[k*3]-prev[k*3])*fab.damp, vy=(pos[k*3+1]-prev[k*3+1])*fab.damp+g*h*h, vz=(pos[k*3+2]-prev[k*3+2])*fab.damp; prev[k*3]=pos[k*3]; prev[k*3+1]=pos[k*3+1]; prev[k*3+2]=pos[k*3+2]; pos[k*3]+=vx; pos[k*3+1]+=vy; pos[k*3+2]+=vz; }
+    const comp=[fab.stretch/(h*h), fab.shear/(h*h), fab.bend/(h*h)], m=cons.length;
+    for (let pass=0; pass<2; pass++) for (let i=0;i<m;i++){ const t=CT[i]; if(!CAL[i] || (pass===1 && t!==0)) continue; const ia=CA[i], ib=CB[i], a=ia*3,b=ib*3; let dx=pos[b]-pos[a],dy=pos[b+1]-pos[a+1],dz=pos[b+2]-pos[a+2]; const d=Math.sqrt(dx*dx+dy*dy+dz*dz)||1e-6; const rest=t===1?CR[i]*bias:CR[i]; const wa=invM[ia], wb=invM[ib], w=wa+wb; if(!w) continue; const lam=(d-rest)/((w+comp[t])*d); pos[a]+=dx*lam*wa; pos[a+1]+=dy*lam*wa; pos[a+2]+=dz*lam*wa; pos[b]-=dx*lam*wb; pos[b+1]-=dy*lam*wb; pos[b+2]-=dz*lam*wb; }
+    for (let k=0;k<n;k++){ const x=pos[k*3],y=pos[k*3+1],z=pos[k*3+2];
+      for (const [cx,cy,cz,r] of FORM){ const dx=x-cx,dy=y-cy,dz=z-cz; const d=Math.hypot(dx,dy,dz); const rr=r+0.012; if (d<rr){ const f=rr/d; pos[k*3]=cx+dx*f; pos[k*3+1]=cy+dy*f; pos[k*3+2]=cz+dz*f; } }
+      if (pos[k*3+1]<-0.89) pos[k*3+1]=-0.89; }
+    for (const [k,p] of pinned){ pos[k*3]=p[0]; pos[k*3+1]=p[1]; pos[k*3+2]=p[2]; }
+  }
+  geo.attributes.position.needsUpdate=true; geo.computeVertexNormals();
+}
+/* ---- interaction ------------------------------------------------------------------- */
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(); let held=null, holdDepth=0, cutting=false, lastCut=null;
+function nearest(nx,ny){ ndc.set(nx,ny); ray.setFromCamera(ndc,camera); const hit=ray.intersectObject(mesh)[0]; if(!hit) return null; let best=-1,bd=1e9; for(let k=0;k<n;k++){ const d=(pos[k*3]-hit.point.x)**2+(pos[k*3+1]-hit.point.y)**2+(pos[k*3+2]-hit.point.z)**2; if(d<bd){bd=d;best=k;} } return {k:best, point:hit.point, dist:hit.distance}; }
+function cutAt(point){ let c0=0; for (const c of cons){ if(!c.alive) continue; const mx=(pos[c.a*3]+pos[c.b*3])/2,my=(pos[c.a*3+1]+pos[c.b*3+1])/2,mz=(pos[c.a*3+2]+pos[c.b*3+2])/2; if (Math.hypot(mx-point.x,my-point.y,mz-point.z) < SIZE/(NX-1)*0.9){ c.alive=false; c0++; } }
+  if (c0) for (let i=0;i<cons.length;i++) CAL[i]=cons[i].alive?1:0; if (c0){ cutCount+=c0; rebuildIndex(); } }
+let shift=false; window.addEventListener("keydown",e=>{ if(e.key==="Shift") shift=true; }); window.addEventListener("keyup",e=>{ if(e.key==="Shift") shift=false; });
+document.getElementById("fabric").addEventListener("change", e => { fab=FABRIC[e.target.value]; invM.fill(1/fab.mass); mesh.material.color.set(fab.color); });
+document.getElementById("resetbtn").addEventListener("click", build);
+document.getElementById("cambtn").addEventListener("click", async () => { const ok=await hands.startCamera(); document.getElementById("cambtn").setAttribute("aria-pressed",String(ok)); if(ok){ const c=document.getElementById("cam"); c.hidden=false; c.appendChild(hands.video); hands.video.style.cssText="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:.85"; } });
+canvas.addEventListener("wheel", e => { e.preventDefault(); const R=hands.state.right; const h=nearest(R.indexTip[0]*2-1, -(R.indexTip[1]*2-1)); if (h){ smooth(h.point); } else camR=Math.max(1.2,Math.min(5,camR*Math.exp(e.deltaY*0.001))); }, {passive:false});
+function smooth(point){ for(let k=0;k<n;k++){ const d=Math.hypot(pos[k*3]-point.x,pos[k*3+1]-point.y,pos[k*3+2]-point.z); if(d<0.12){ prev[k*3]=pos[k*3]; prev[k*3+1]=pos[k*3+1]; prev[k*3+2]=pos[k*3+2]; } } }
+function gather(point){ for(let k=0;k<n;k++){ const dx=point.x-pos[k*3],dy=point.y-pos[k*3+1],dz=point.z-pos[k*3+2]; const d=Math.hypot(dx,dy,dz); if(d<0.14 && d>0.01){ pos[k*3]+=dx*0.08; pos[k*3+1]+=dy*0.08; pos[k*3+2]+=dz*0.08; } } }
+let prevTip=null, prevSpread=1, lastT=0;
+build();
+function frame(now){
+  const dt=Math.min(0.033, (now-lastT)/1000||0.016); lastT=now;
+  const W=canvas.clientWidth|0,H=canvas.clientHeight|0; if(renderer.domElement.width!==Math.floor(W*renderer.getPixelRatio())){ renderer.setSize(W,H,false); camera.aspect=W/H; camera.updateProjectionMatrix(); }
+  const st=hands.state, R=st.right, L=st.left, cam=st.source==="camera";
+  const cur=document.getElementById("cur"); cur.style.left=(R.indexTip[0]*W)+"px"; cur.style.top=(R.indexTip[1]*H)+"px"; cur.classList.toggle("pinch",R.pinch>0.7); cur.hidden=!R.present;
+  const cL=document.getElementById("curL"); cL.hidden=!L.present; if(L.present){ cL.style.left=(L.indexTip[0]*W)+"px"; cL.style.top=(L.indexTip[1]*H)+"px"; cL.classList.toggle("pinch",L.pinch>0.7); }
+  document.getElementById("latstat").innerHTML = cam ? `input <b>webcam · ${(st.latencyMs||0).toFixed(0)} ms</b>` : `input <b>mouse</b>`;
+  const nx=R.indexTip[0]*2-1, ny=-(R.indexTip[1]*2-1);
+  // pin / drag
+  const pinching = cam ? (R.present && R.pinch>0.7) : (R.pinch>0.7 && !shift);
+  if (pinching){ if (held===null){ const h=nearest(nx,ny); if (h){ held=h.k; holdDepth=h.dist; } } if (held!==null){ ndc.set(nx,ny); ray.setFromCamera(ndc,camera); const p=ray.ray.at(holdDepth, new THREE.Vector3()); pinned.set(held,[p.x,p.y,p.z]); } }
+  else if (held!==null){ pinned.delete(held); held=null; }
+  // cut: TRACE (camera) / shift-drag (mouse)
+  const tracing = cam ? (R.present && R.trace) : (R.pinch>0.7 && shift);
+  if (tracing){ const h=nearest(nx,ny); if (h){ if (lastCut){ const d=h.point.distanceTo(lastCut); const steps=Math.max(1,Math.ceil(d/(SIZE/NX*0.5))); for(let i=1;i<=steps;i++) cutAt(lastCut.clone().lerp(h.point,i/steps)); } else cutAt(h.point); lastCut=h.point.clone(); } } else lastCut=null;
+  // gather: FIST
+  if (R.fist && (cam || !pinching)){ const h=nearest(nx,ny); if (h) gather(h.point); else if (!cam && prevTip){ camTh-=(R.indexTip[0]-prevTip[0])*4; camPh=Math.max(0.2,Math.min(Math.PI-0.2,camPh+(R.indexTip[1]-prevTip[1])*4)); } }
+  // smooth: PALM_PUSH (camera)
+  if (cam && R.present && R.palmPush>1.0 && !R.trace && R.pinch<0.3){ const h=nearest(nx,ny); if (h) smooth(h.point); }
+  // bias: SPREAD
+  if (st.spreading){ bias=Math.max(0.85,Math.min(1.35,bias*(st.spread/prevSpread))); } prevSpread=st.spread;
+  prevTip=R.present?[R.indexTip[0],R.indexTip[1]]:null;
+  step(dt, 6);
+  camera.position.set(target.x+camR*Math.sin(camPh)*Math.sin(camTh), target.y+camR*Math.cos(camPh), target.z+camR*Math.sin(camPh)*Math.cos(camTh)); camera.lookAt(target);
+  renderer.render(scene,camera);
+  document.getElementById("simstat").innerHTML=`<b>${n}</b> particles · <b>${cons.filter(c=>c.alive).length}</b> constraints · ${cutCount} cut`;
+  document.getElementById("hudstat").textContent=`${document.getElementById("fabric").value} · bias ×${bias.toFixed(2)} · pinned ${pinned.size}${held!==null?" · dragging":""}`;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>

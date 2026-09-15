@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Air-Painting</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../shared/proto.css"></head><body>
+<div class="app">
+  <div class="bar">
+    <div><div class="eyebrow">viture · air-painting · browser prototype</div><h1>Air-Painting</h1></div>
+    <div class="sp"></div>
+    <span class="stat" id="latstat">input <b>mouse</b></span>
+    <button id="slicebtn" aria-pressed="false">section plane</button>
+    <button id="cambtn" aria-pressed="false">webcam hands</button>
+    <a href="../">← all prototypes</a>
+  </div>
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><div class="card">
+      <b>Same engine as Air-CAD, operator flipped to <code>min</code>, nothing to load.</b>
+      <div><span class="k">paint</span> TRACE with the index finger in the air — mouse: left-drag.<br>
+      <span class="k">depth</span> move your hand toward or away from the camera — mouse: wheel.<br>
+      <span class="k">orbit</span> pinch and move — mouse: right-drag. <span class="k">scale</span> SPREAD — mouse: shift + wheel.</div>
+      <label>brush radius <input type="range" id="brushr" min="0.012" max="0.09" step="0.002"></label>
+      <div id="hudstat" style="font-family:var(--mono);font-size:10.5px;color:var(--ink-mute)"></div>
+    </div></div>
+    <div class="cursor" id="cur"></div><div class="cursor left" id="curL" hidden></div>
+    <div class="cam" id="cam" hidden><span class="cl">camera</span></div>
+    <div class="foot">The notes call this the lowest-risk first build: no model dependency on project 04, and it exercises the whole TRACE-in-3D path that carving needs.</div>
+  </div>
+</div>
+<script src="../shared/hands.js"></script><script src="../shared/sdf.js"></script><script src="../shared/sdf-app.js"></script>
+<script>window.view = runSDFApp({op:"add", brushR:0.03, colors:{col:"#a78bec", cut:"#d3a03a", paint:"#5fb98d"}, init:() => 4/96});</script>
+</body></html>

@@ -1,0 +1,44 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Air-CAD</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../shared/proto.css"></head><body>
+<div class="app">
+  <div class="bar">
+    <div><div class="eyebrow">viture · air-cad · browser prototype</div><h1>Air-CAD</h1></div>
+    <div class="sp"></div>
+    <span class="stat" id="latstat">input <b>mouse</b></span>
+    <button id="slicebtn" aria-pressed="false">section plane</button>
+    <button id="cambtn" aria-pressed="false">webcam hands</button>
+    <a href="../">← all prototypes</a>
+  </div>
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><div class="card">
+      <b>An L-bracket as a signed-distance field.</b>
+      <div><span class="k">carve</span> TRACE with the index finger — mouse: left-drag. Carving is <code>max(d, −brush)</code>.<br>
+      <span class="k">rotate</span> pinch and move — mouse: right-drag.<br>
+      <span class="k">scale</span> SPREAD both hands — mouse: shift + wheel.<br>
+      <span class="k">section</span> PALM_PUSH toward the model — mouse: wheel with the section on. The cut face is shaded like a drawing.<br>
+      <span class="k">subtract</span> FIST held still: pending 250 ms, cancelled if you move or open — mouse: hold right button still.<br>
+      <span class="k">depth</span> hand distance from the camera — mouse: wheel with the section off.</div>
+      <label>brush radius <input type="range" id="brushr" min="0.012" max="0.09" step="0.002"></label>
+      <div id="hudstat" style="font-family:var(--mono);font-size:10.5px;color:var(--ink-mute)"></div>
+    </div></div>
+    <div class="cursor" id="cur"></div><div class="cursor left" id="curL" hidden></div>
+    <div class="cam" id="cam" hidden><span class="cl">camera</span></div>
+    <div class="foot">96³ field, 1 byte per voxel; ±4 voxel band. The notes' caveat is visible here: at this resolution a 1 m part has ~1 cm voxels, so thin features vanish — keep a mesh alongside for display when this goes to Unity.</div>
+  </div>
+</div>
+<script src="../shared/hands.js"></script><script src="../shared/sdf.js"></script><script src="../shared/sdf-app.js"></script>
+<script>
+window.view = runSDFApp({op:"carve", brushR:0.035, colors:{col:"#b0bac6", cut:"#d3a03a", paint:"#a78bec"},
+  init:(x,y,z) => { const p=[x,y,z];
+    const base = sdfBox(p, [0,-0.2,0], [0.32,0.05,0.22]);          // foot
+    const wall = sdfBox(p, [-0.27,0.0,0], [0.05,0.25,0.22]);        // upright
+    const fillet = sdfBox(p, [-0.2,-0.13,0], [0.06,0.06,0.22]);
+    let d = Math.min(base, wall, fillet);
+    d = Math.max(d, -sdfCylY(p, [0.1,-0.2,0.1], 0.055, 0.2));       // two holes through the foot
+    d = Math.max(d, -sdfCylY(p, [0.1,-0.2,-0.1], 0.055, 0.2));
+    d = Math.max(d, -sdfCylX(p, [-0.27,0.1,0], 0.06, 0.2));         // one through the upright
+    return d; }});
+</script></body></html>

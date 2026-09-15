@@ -1,0 +1,278 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orchestra Seats</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../shared/proto.css">
+<style>
+.stage{display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,2fr)}
+@media (max-width:820px){.stage{grid-template-columns:1fr;grid-template-rows:42% 1fr}}
+.plan{position:relative;border-right:1px solid var(--rule);background:var(--sunken)}
+.plan svg{width:100%;height:100%}
+.seat{cursor:pointer}
+.seat circle{fill:var(--surface-2);stroke:var(--rule);stroke-width:1}
+.seat:hover circle{stroke:var(--ink)}
+.seat.here circle{fill:var(--accent);stroke:var(--accent)}
+.seat text{font-family:var(--mono);font-size:5.2px;fill:var(--ink-soft);text-anchor:middle;pointer-events:none}
+.seat.here text{fill:#000}
+.seat.playing circle{stroke:var(--ok);stroke-width:1.6}
+.seclabel{font-family:var(--mono);font-size:4.6px;letter-spacing:.1em;text-transform:uppercase;fill:var(--ink-mute);text-anchor:middle}
+.podium{fill:none;stroke:var(--ink-mute);stroke-dasharray:1.5 1.5}
+.fov{fill:var(--accent);opacity:.12}
+.fp{position:relative;background:var(--ground)}
+.mix{display:grid;gap:4px}
+.mix .m{display:grid;grid-template-columns:78px 1fr 34px;gap:7px;align-items:center;font-size:11px}
+.mix .m .n{font-family:var(--mono);font-size:10px;color:var(--ink-soft)}
+.mix .m .b{height:7px;background:var(--sunken);border-radius:1px;overflow:hidden}
+.mix .m .b i{display:block;height:100%;background:var(--accent)}
+.mix .m .v{font-family:var(--mono);font-size:10px;color:var(--ink-mute);text-align:right}
+.mix .m.own .b i{background:var(--ok)} .mix .m.own .n{color:var(--ok)}
+</style></head><body>
+<div class="app">
+  <div class="bar">
+    <div><div class="eyebrow">viture · orchestra · browser prototype</div><h1 id="title">Orchestra Seats</h1></div>
+    <div class="sp"></div>
+    <span class="stat" id="seatstat"></span>
+    <span class="stat" id="latstat">input <b>mouse</b></span>
+    <button id="playbtn">▶ play the orchestra</button>
+    <button id="cambtn" aria-pressed="false">webcam hands</button>
+    <button id="micbtn" aria-pressed="false">mic breath</button>
+    <a href="../">← all prototypes</a>
+  </div>
+  <div class="stage">
+    <div class="plan"><svg id="plan" viewBox="-60 -8 120 96" aria-label="Seating plan; click a seat to teleport"></svg></div>
+    <div class="fp">
+      <canvas id="view"></canvas>
+      <div class="hud"><div class="card" id="mode"></div><div class="card"><div class="k">what you hear from this seat</div><div class="mix" id="mix"></div></div></div>
+      <div class="cursor" id="cur"></div><div class="cursor left" id="curL" hidden></div>
+      <div class="blink" id="blink"></div>
+      <div class="cam" id="cam" hidden><span class="cl">camera</span></div>
+      <div class="foot" id="foot"></div>
+    </div>
+  </div>
+</div>
+<script src="../shared/hands.js"></script>
+<script>
+/* ===================================================================================
+   Seats. Positions in metres on the stage: x right, y toward the back; podium at 0,0.
+   Twenty authored seats — the notes are explicit that seats are a fixed set, because
+   each needs its own mix. Families decide which instrument mode the hands get.
+   =================================================================================== */
+const SEATS = [
+  {id:"vln1a",sec:"Violin I",fam:"strings",inst:"violin",x:-5.5,y:2.0,part:"melody",oct:5},
+  {id:"vln1b",sec:"Violin I",fam:"strings",inst:"violin",x:-8.5,y:4.0,part:"melody",oct:5},
+  {id:"vln1c",sec:"Violin I",fam:"strings",inst:"violin",x:-11,y:7,part:"melody",oct:4},
+  {id:"vln2a",sec:"Violin II",fam:"strings",inst:"violin",x:-2.5,y:2.5,part:"fifth",oct:4},
+  {id:"vln2b",sec:"Violin II",fam:"strings",inst:"violin",x:-5,y:5.5,part:"fifth",oct:4},
+  {id:"vlaa",sec:"Viola",fam:"strings",inst:"viola",x:2.5,y:2.5,part:"third",oct:3},
+  {id:"vlab",sec:"Viola",fam:"strings",inst:"viola",x:5,y:5.5,part:"third",oct:3},
+  {id:"vca",sec:"Cello",fam:"strings",inst:"cello",x:5.5,y:2.0,part:"root",oct:3},
+  {id:"vcb",sec:"Cello",fam:"strings",inst:"cello",x:8.5,y:4.0,part:"root",oct:2},
+  {id:"db",sec:"Basses",fam:"strings",inst:"bass",x:12,y:8,part:"root",oct:1},
+  {id:"harp",sec:"Harp",fam:"strings",inst:"harp",x:-14,y:10,part:"arp",oct:4},
+  {id:"fl",sec:"Flute",fam:"woodwind",inst:"flute",x:-3,y:9,part:"melody",oct:6},
+  {id:"ob",sec:"Oboe",fam:"woodwind",inst:"oboe",x:0,y:9,part:"third",oct:5},
+  {id:"cl",sec:"Clarinet",fam:"woodwind",inst:"clarinet",x:3,y:9,part:"fifth",oct:4},
+  {id:"bn",sec:"Bassoon",fam:"woodwind",inst:"bassoon",x:6,y:9,part:"root",oct:2},
+  {id:"hn",sec:"Horns",fam:"brass",inst:"horn",x:-9,y:13,part:"fifth",oct:3},
+  {id:"tpt",sec:"Trumpets",fam:"brass",inst:"trumpet",x:2,y:13.5,part:"melody",oct:4},
+  {id:"tbn",sec:"Trombones",fam:"brass",inst:"trombone",x:7,y:13.5,part:"root",oct:2},
+  {id:"timp",sec:"Timpani",fam:"percussion",inst:"timpani",x:-3,y:17.5,part:"drum",oct:2},
+  {id:"perc",sec:"Percussion",fam:"percussion",inst:"snare",x:4,y:17.5,part:"drum",oct:0},
+];
+const CONDUCTOR = {x:0,y:0};
+
+/* ---- the piece: a looping 8-bar chorale in D, 72 bpm. Parts are scale degrees. ------- */
+const BPM=72, BEAT=60/BPM, BAR=4*BEAT;
+const KEY=62; // D4 midi
+const CHORDS = [[0,4,7],[9,0,4],[5,9,0],[7,11,2], [0,4,7],[9,0,4],[5,9,0],[7,11,2]];  // I vi IV V ×2 (semitones from D)
+const MELODY = [[0,2,4,5],[4,2,0,-3],[5,4,2,0],[-1,2,4,7],[7,5,4,2],[0,-3,0,2],[5,4,2,0],[2,-1,0,0]]; // per bar, quarter notes
+const midiHz = m => 440*Math.pow(2,(m-69)/12);
+const partNote = (seat, bar, beat) => { const ch=CHORDS[bar%8]; const base=KEY+12*(seat.oct-4);
+  switch(seat.part){ case "melody": return base + MELODY[bar%8][beat]; case "root": return base+ch[0]; case "third": return base+ch[1]; case "fifth": return base+ch[2];
+    case "arp": return base + ch[beat%3] + (beat===3?12:0); default: return null; } };
+
+/* ---- audio ------------------------------------------------------------------------- */
+let AC=null, master, dry, wet, conv, listenerSeat=null, sources={}, playing=false, schedTimer=null, nextBar=0, nextBarTime=0;
+const TIMBRE = {
+  violin:{osc:["sawtooth","sawtooth"],det:6,cut:2600,q:.7,att:.08,rel:.25,g:.16}, viola:{osc:["sawtooth","triangle"],det:5,cut:1800,q:.8,att:.09,rel:.25,g:.17},
+  cello:{osc:["sawtooth","sawtooth"],det:4,cut:1200,q:.9,att:.1,rel:.3,g:.2}, bass:{osc:["sawtooth","square"],det:3,cut:500,q:1,att:.12,rel:.35,g:.22},
+  harp:{osc:["triangle","sine"],det:2,cut:3000,q:.5,att:.005,rel:1.2,g:.22,pluck:true},
+  flute:{osc:["sine","triangle"],det:3,cut:4000,q:.3,att:.06,rel:.2,g:.16}, oboe:{osc:["sawtooth","square"],det:2,cut:2200,q:3,att:.05,rel:.2,g:.13},
+  clarinet:{osc:["square","square"],det:2,cut:1600,q:1.2,att:.06,rel:.2,g:.13}, bassoon:{osc:["sawtooth","square"],det:3,cut:900,q:1.6,att:.08,rel:.25,g:.17},
+  horn:{osc:["triangle","sawtooth"],det:3,cut:1100,q:1,att:.12,rel:.3,g:.19}, trumpet:{osc:["sawtooth","sawtooth"],det:2,cut:2800,q:1.4,att:.04,rel:.2,g:.14}, trombone:{osc:["sawtooth","triangle"],det:3,cut:1300,q:1,att:.08,rel:.25,g:.18},
+};
+function ensureAudio(){
+  if (AC) return; AC = new (window.AudioContext||window.webkitAudioContext)();
+  master = AC.createGain(); master.gain.value = 0.9; master.connect(AC.destination);
+  dry = AC.createGain(); dry.connect(master); wet = AC.createGain(); wet.gain.value = 0.32;
+  conv = AC.createConvolver(); conv.buffer = makeIR(1.9); wet.connect(conv); conv.connect(master);
+  for (const s of SEATS) sources[s.id] = makeSource(s);
+  const L = AC.listener; if (L.positionX){ L.positionX.value=0; L.positionY.value=0; L.positionZ.value=0; } 
+}
+function makeIR(sec){ const n=Math.floor(AC.sampleRate*sec), b=AC.createBuffer(2,n,AC.sampleRate); for(let c=0;c<2;c++){ const d=b.getChannelData(c); for(let i=0;i<n;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.6)*Math.exp(-i/(n*0.35)); } } return b; }
+function makeSource(seat){
+  const pan = AC.createPanner(); pan.panningModel="HRTF"; pan.distanceModel="inverse"; pan.refDistance=1; pan.rolloffFactor=1.1; pan.maxDistance=60;
+  pan.positionX.value = seat.x; pan.positionY.value = 0; pan.positionZ.value = -seat.y;    // stage y (toward back) is −z in audio space
+  const g = AC.createGain(); g.gain.value = 1; g.connect(pan); pan.connect(dry); pan.connect(wet);
+  return {seat, pan, gain:g, voices:[]};
+}
+function playNote(src, midi, t, dur, vel=1){
+  const T = TIMBRE[src.seat.inst]; if (!T) return;
+  const f = AC.createBiquadFilter(); f.type="lowpass"; f.frequency.value=T.cut*(0.7+0.6*vel); f.Q.value=T.q;
+  const env = AC.createGain(); env.gain.setValueAtTime(0,t); env.gain.linearRampToValueAtTime(T.g*vel, t+T.att); 
+  if (T.pluck) env.gain.exponentialRampToValueAtTime(0.0008, t+T.rel); else { env.gain.setValueAtTime(T.g*vel, t+dur-T.rel*0.5); env.gain.linearRampToValueAtTime(0, t+dur+T.rel); }
+  f.connect(env); env.connect(src.gain);
+  T.osc.forEach((type,i) => { const o=AC.createOscillator(); o.type=type; o.frequency.value=midiHz(midi)*(i?1+T.det/1000:1-T.det/1000); o.connect(f); o.start(t); o.stop(t+dur+T.rel+0.05); });
+}
+function playDrum(src, kind, t, vel=1, pos=0){   // pos 0 centre .. 1 edge
+  const dur = kind==="timpani" ? 1.4 : kind==="cymbal" ? 2.2 : 0.35;
+  const n = AC.createBufferSource(); const len=Math.floor(AC.sampleRate*dur); const b=AC.createBuffer(1,len,AC.sampleRate); const d=b.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(len*(kind==="cymbal"?0.5:0.12)));
+  n.buffer=b; const f=AC.createBiquadFilter(); f.type = kind==="cymbal"?"highpass":"bandpass"; f.frequency.value = kind==="timpani"? 180+pos*200 : kind==="cymbal"? 5000 : 1500+pos*2500; f.Q.value = kind==="timpani"?6:1;
+  const g=AC.createGain(); g.gain.value = (kind==="timpani"?0.9:kind==="cymbal"?0.5:0.7)*vel; n.connect(f); f.connect(g); g.connect(src.gain); n.start(t);
+  if (kind==="timpani"){ const o=AC.createOscillator(); o.frequency.setValueAtTime(110*(1-pos*0.25),t); o.frequency.exponentialRampToValueAtTime(70,t+0.5); const e=AC.createGain(); e.gain.setValueAtTime(0.8*vel,t); e.gain.exponentialRampToValueAtTime(0.001,t+1.2); o.connect(e); e.connect(src.gain); o.start(t); o.stop(t+1.3); }
+}
+function scheduleBar(bar, t0){
+  for (const s of SEATS){ if (s.id===listenerSeat?.id && playMode.active) continue;         // your seat: you play it
+    const src = sources[s.id];
+    if (s.part==="drum"){ if (s.inst==="timpani"){ playDrum(src,"timpani",t0,0.9,0.2); playDrum(src,"timpani",t0+2*BEAT,0.6,0.2); }
+      else { if (bar%8===7){ for(let k=0;k<8;k++) playDrum(src,"snare",t0+k*BEAT/2,0.35+k*0.06,0.5); } if (bar%8===0) playDrum(src,"cymbal",t0,0.8); } continue; }
+    if (s.part==="melody" || s.part==="arp"){ for(let b=0;b<4;b++){ const m=partNote(s,bar,b); playNote(src,m,t0+b*BEAT,BEAT*0.95,0.85+0.15*(b===0)); } }
+    else { const m=partNote(s,bar,0); playNote(src,m,t0,BAR*0.98,0.8+(bar%4===3?0.15:0)); }
+  }
+}
+function startPlaying(){ ensureAudio(); if (AC.state==="suspended") AC.resume(); playing=true; nextBar=0; nextBarTime=AC.currentTime+0.1;
+  schedTimer = setInterval(() => { while (nextBarTime < AC.currentTime + 0.6){ scheduleBar(nextBar, nextBarTime); nextBar++; nextBarTime += BAR; } }, 120);
+  document.getElementById("playbtn").textContent = "■ stop"; }
+function stopPlaying(){ playing=false; clearInterval(schedTimer); document.getElementById("playbtn").textContent="▶ play the orchestra"; if (AC) AC.suspend(); }
+document.getElementById("playbtn").addEventListener("click", () => playing ? stopPlaying() : startPlaying());
+
+/* ---- seats: teleport + listener ------------------------------------------------------ */
+function sitAt(seat){
+  const blink=document.getElementById("blink"); blink.classList.add("on");
+  setTimeout(() => { listenerSeat = seat; ensureAudio(); const L=AC.listener;
+    // face the podium
+    const dx=CONDUCTOR.x-seat.x, dz=-(CONDUCTOR.y-seat.y); const l=Math.hypot(dx,dz)||1;
+    if (L.positionX){ L.positionX.value=seat.x; L.positionY.value=0; L.positionZ.value=-seat.y; L.forwardX.value=dx/l; L.forwardY.value=0; L.forwardZ.value=dz/l; L.upX.value=0; L.upY.value=1; L.upZ.value=0; }
+    else { L.setPosition(seat.x,0,-seat.y); L.setOrientation(dx/l,0,dz/l,0,1,0); }
+    // own instrument: full level at zero distance would clip HRTF; hold it at 0.6 m in front
+    for (const s of SEATS){ const p=sources[s.id].pan; if (s.id===seat.id){ p.positionX.value=seat.x+0.4*dx/l; p.positionZ.value=-seat.y+0.4*dz/l; } else { p.positionX.value=s.x; p.positionZ.value=-s.y; } }
+    setMode(seat); renderPlan(); renderMix(); document.getElementById("seatstat").innerHTML = `seat <b>${seat.sec} · ${seat.inst}</b>`;
+    blink.classList.remove("on"); }, 120);
+}
+function renderPlan(){
+  const svg=document.getElementById("plan");
+  const secs=[...new Set(SEATS.map(s=>s.sec))];
+  svg.innerHTML = `<path class="podium" d="M-3 -1 h6 v4 h-6z"/><text class="seclabel" x="0" y="-3">podium</text>`
+    + (listenerSeat ? (()=>{ const s=listenerSeat; const a=Math.atan2(CONDUCTOR.y-s.y, CONDUCTOR.x-s.x); const r=40; const p=k=>`${s.x+r*Math.cos(a+k)} ${(s.y+r*Math.sin(a+k))}`; return `<path class="fov" d="M${s.x} ${s.y} L${p(-0.9)} A${r} ${r} 0 0 1 ${p(0.9)}z"/>`; })() : "")
+    + SEATS.map(s => `<g class="seat ${listenerSeat&&listenerSeat.id===s.id?"here":""} ${s.fam!=="brass"?"playing":""}" data-id="${s.id}" transform="translate(${s.x} ${s.y})"><circle r="2.6"/><text y="1.6">${s.inst.slice(0,4)}</text></g>`).join("")
+    + secs.map(sec => { const ss=SEATS.filter(s=>s.sec===sec); const x=ss.reduce((a,s)=>a+s.x,0)/ss.length, y=Math.max(...ss.map(s=>s.y))+5.2; return `<text class="seclabel" x="${x}" y="${y}">${sec}</text>`; }).join("");
+  svg.querySelectorAll(".seat").forEach(g => g.addEventListener("click", () => sitAt(SEATS.find(s=>s.id===g.dataset.id))));
+  // y grows toward the back; draw back at the top
+  svg.setAttribute("viewBox","-20 -6 40 30"); svg.style.transform="scaleY(-1)"; svg.querySelectorAll("text").forEach(t => t.setAttribute("transform","scale(1 -1)"));
+}
+function renderMix(){
+  if (!listenerSeat) return;
+  const secs=[...new Set(SEATS.map(s=>s.sec))];
+  const rows = secs.map(sec => { const ss=SEATS.filter(s=>s.sec===sec); let lvl=0; for (const s of ss){ const d = s.id===listenerSeat.id ? 0.4 : Math.hypot(s.x-listenerSeat.x, s.y-listenerSeat.y); lvl += 1/Math.max(0.4,d); } return [sec, lvl, ss.some(s=>s.id===listenerSeat.id)]; });
+  const mx = Math.max(...rows.map(r=>r[1]));
+  document.getElementById("mix").innerHTML = rows.sort((a,b)=>b[1]-a[1]).map(([sec,l,own]) => `<div class="m ${own?"own":""}"><span class="n">${sec}</span><span class="b"><i style="width:${(l/mx*100).toFixed(0)}%"></i></span><span class="v">${(20*Math.log10(l/mx)).toFixed(0)} dB</span></div>`).join("");
+}
+
+/* ---- instrument modes ---------------------------------------------------------------- */
+const hands = createHands({mirror:true, bounds:document.getElementById("view")});
+const playMode = {active:false, fam:null};
+let breath = 0, micAnalyser=null, micData=null;
+const SCALE = [0,2,4,5,7,9,11,12,14,16];   // D major degrees
+function setMode(seat){
+  playMode.fam = seat.fam; playMode.active = seat.fam !== "brass";
+  const m = document.getElementById("mode");
+  const how = {
+    percussion:`<b>${seat.inst} — strike.</b> <span class="k">hands</span> a downward flick of either hand across the head. <span class="k">mouse</span> click on the head; strike speed = pointer speed. Velocity → loudness, centre → edge changes the tone.`,
+    woodwind:`<b>${seat.inst} — finger + breath.</b> <span class="k">hands</span> curl fingers to close keys (left index/middle/ring, right index/middle/ring); the note is the count of closed keys. <span class="k">mouse</span> keys <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <kbd>J</kbd><kbd>K</kbd><kbd>L</kbd>. <b>Breath:</b> turn on <em>mic breath</em> and blow; without a mic, hold <kbd>space</kbd>.`,
+    strings: seat.inst==="harp" ? `<b>harp — pluck.</b> <span class="k">hands</span> sweep the index finger across the strings. <span class="k">mouse</span> drag across them.` :
+      `<b>${seat.inst} — pitch-snapped.</b> Hand position along the fingerboard picks a scale degree, snapped to D major (the notes say never ship a continuous-pitch violin). <span class="k">pluck</span> pinch / click. <span class="k">bow</span> move the other hand up and down — bow speed sets the tone; with the mouse, hold the button and move.`,
+    brass:`<b>${seat.inst} — listening seat.</b> Brass is not in this build; sit and hear the balance from here.`,
+  }[seat.fam];
+  m.innerHTML = how;
+}
+let keys = {a:0,s:0,d:0,j:0,k:0,l:0}, space=false, lastStrike=0, woodwindVoice=null, bowVoice=null;
+window.addEventListener("keydown", e => { const k=e.key.toLowerCase(); if (k in keys) keys[k]=1; if (k===" "){ space=true; e.preventDefault(); } });
+window.addEventListener("keyup", e => { const k=e.key.toLowerCase(); if (k in keys) keys[k]=0; if (k===" ") space=false; });
+
+/* Woodwind: a sustained voice whose gain follows breath and whose pitch follows fingering. */
+function woodwind(nClosed, br, t){
+  if (!AC || !listenerSeat) return; const src = sources[listenerSeat.id], T=TIMBRE[listenerSeat.inst];
+  const midi = KEY + 12*(listenerSeat.oct-4) + SCALE[Math.min(9, 6-nClosed+3)];   // more keys closed = lower
+  if (!woodwindVoice){ const o1=AC.createOscillator(), o2=AC.createOscillator(); o1.type=T.osc[0]; o2.type=T.osc[1]; const f=AC.createBiquadFilter(); f.type="lowpass"; f.frequency.value=T.cut; f.Q.value=T.q; const g=AC.createGain(); g.gain.value=0; o1.connect(f); o2.connect(f); f.connect(g); g.connect(src.gain); o1.start(); o2.start(); woodwindVoice={o1,o2,f,g}; }
+  const v=woodwindVoice; v.o1.frequency.setTargetAtTime(midiHz(midi)*(1-T.det/1000), t, 0.02); v.o2.frequency.setTargetAtTime(midiHz(midi)*(1+T.det/1000), t, 0.02);
+  v.g.gain.setTargetAtTime(T.g*1.6*br, t, br>0.05?0.03:0.08); v.f.frequency.setTargetAtTime(T.cut*(0.5+br), t, 0.05);
+}
+function bow(midi, speed, t){
+  if (!AC || !listenerSeat) return; const src=sources[listenerSeat.id], T=TIMBRE[listenerSeat.inst];
+  if (!bowVoice){ const o1=AC.createOscillator(), o2=AC.createOscillator(); o1.type=T.osc[0]; o2.type=T.osc[1]; const f=AC.createBiquadFilter(); f.type="lowpass"; f.frequency.value=T.cut; f.Q.value=T.q; const g=AC.createGain(); g.gain.value=0; o1.connect(f); o2.connect(f); f.connect(g); g.connect(src.gain); o1.start(); o2.start(); bowVoice={o1,o2,f,g}; }
+  const v=bowVoice; v.o1.frequency.setTargetAtTime(midiHz(midi)*(1-T.det/1000),t,0.03); v.o2.frequency.setTargetAtTime(midiHz(midi)*(1+T.det/1000),t,0.03);
+  const g=Math.min(1,speed/1.2); v.g.gain.setTargetAtTime(T.g*1.5*g,t,0.05); v.f.frequency.setTargetAtTime(T.cut*(0.6+0.8*g),t,0.05);
+}
+async function enableMic(){ try { ensureAudio(); const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false},video:false}); const s=AC.createMediaStreamSource(st); const hp=AC.createBiquadFilter(); hp.type="lowpass"; hp.frequency.value=400; micAnalyser=AC.createAnalyser(); micAnalyser.fftSize=512; s.connect(hp); hp.connect(micAnalyser); micData=new Float32Array(512); document.getElementById("micbtn").setAttribute("aria-pressed","true"); } catch(e){ document.getElementById("foot").textContent="mic: "+e.message; } }
+document.getElementById("micbtn").addEventListener("click", enableMic);
+document.getElementById("cambtn").addEventListener("click", async () => { const ok = await hands.startCamera(); const b=document.getElementById("cambtn"); b.setAttribute("aria-pressed", String(ok)); if (ok){ const c=document.getElementById("cam"); c.hidden=false; c.appendChild(hands.video); hands.video.style.cssText="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:.85"; } else document.getElementById("foot").textContent = "camera: "+hands.state.cameraError+" — using the mouse"; });
+
+/* ---- first-person view + per-frame instrument logic ----------------------------------- */
+const view=document.getElementById("view"), vg=view.getContext("2d");
+let strikeFlash=0, harpLast=-1, fbDegree=0, hitLog=[];
+function frame(now){
+  const W=view.clientWidth|0, H=view.clientHeight|0; if (view.width!==W*2){ view.width=W*2; view.height=H*2; } vg.setTransform(2,0,0,2,0,0);
+  vg.fillStyle="#0f1319"; vg.fillRect(0,0,W,H);
+  const st=hands.state, R=st.right, L=st.left;
+  // cursors
+  const cur=document.getElementById("cur"); cur.style.left=(R.indexTip[0]*W)+"px"; cur.style.top=(R.indexTip[1]*H)+"px"; cur.classList.toggle("pinch", R.pinch>0.7); cur.hidden=!R.present;
+  const cL=document.getElementById("curL"); cL.hidden=!L.present; if (L.present){ cL.style.left=(L.indexTip[0]*W)+"px"; cL.style.top=(L.indexTip[1]*H)+"px"; cL.classList.toggle("pinch", L.pinch>0.7); }
+  document.getElementById("latstat").innerHTML = st.source==="camera" ? `input <b>webcam</b> · frame→hands <b>${(st.latencyMs||0).toFixed(0)} ms</b>` : `input <b>mouse</b>`;
+  document.getElementById("latstat").className = "stat " + (st.source==="camera" ? ((st.latencyMs||0) < 50 ? "ok" : "crit") : "");
+  if (!listenerSeat){ vg.fillStyle="#b0bac6"; vg.font="16px IBM Plex Sans"; vg.textAlign="center"; vg.fillText("Click a seat on the plan to zip into it. Press play first.", W/2, H/2); requestAnimationFrame(frame); return; }
+  // --- panorama of the other players as seen from this seat (facing the podium) ---
+  const me=listenerSeat, fwd=Math.atan2(CONDUCTOR.y-me.y, CONDUCTOR.x-me.x);
+  const horizon=H*0.42; vg.strokeStyle="#2a323d"; vg.beginPath(); vg.moveTo(0,horizon); vg.lineTo(W,horizon); vg.stroke();
+  const others = SEATS.filter(s=>s.id!==me.id).map(s => { const d=Math.hypot(s.x-me.x,s.y-me.y); let a=Math.atan2(s.y-me.y,s.x-me.x)-fwd; a=Math.atan2(Math.sin(a),Math.cos(a)); return {s,d,a}; }).filter(o=>Math.abs(o.a)<1.5).sort((a,b)=>b.d-a.d);
+  for (const o of others){ const x=W/2 + Math.tan(o.a)*W*0.42; const sz=Math.max(10, 90/o.d); const y=horizon + 6/o.d*40; vg.fillStyle="#1e2532"; vg.strokeStyle="#3b4653"; vg.beginPath(); vg.arc(x,y-sz*0.6,sz*0.5,0,7); vg.fill(); vg.stroke(); vg.fillStyle="#7b8896"; vg.font=`${Math.max(9,sz*0.35)}px IBM Plex Mono`; vg.textAlign="center"; vg.fillText(o.s.inst, x, y+sz*0.5); }
+  // podium marker
+  { const d=Math.hypot(me.x,me.y); const x=W/2; vg.fillStyle="#7b8896"; vg.font="10px IBM Plex Mono"; vg.textAlign="center"; vg.fillText("▼ podium", x, horizon-8); }
+  // --- instrument overlay, front and centre ---
+  const t = AC ? AC.currentTime : 0;
+  if (me.fam==="percussion"){
+    const cx=W/2, cy=H*0.78, r=Math.min(W,H)*0.22;
+    vg.fillStyle=strikeFlash>0?"#3a2e5a":"#1e2532"; vg.strokeStyle="#a78bec"; vg.lineWidth=3; vg.beginPath(); vg.arc(cx,cy,r,0,7); vg.fill(); vg.stroke(); strikeFlash=Math.max(0,strikeFlash-1);
+    vg.fillStyle="#7b8896"; vg.font="11px IBM Plex Mono"; vg.textAlign="center"; vg.fillText(me.inst==="timpani"?"timpani head — centre is darker, edge rings":"snare — centre / rim", cx, cy+r+16);
+    for (const h of [R,L]){ if(!h.present) continue; const hx=h.indexTip[0]*W, hy=h.indexTip[1]*H; const inside=Math.hypot(hx-cx,hy-cy)<r;
+      const down = st.source==="camera" ? h.palmVel[1] : h.palmVel[1];       // downward = +y
+      const strike = inside && ((st.source==="camera" && down>1.2 && h._wasAbove) || (st.source==="mouse" && h.pinch>0.7 && !h._wasDown));
+      h._wasAbove = !inside; h._wasDown = h.pinch>0.7;
+      if (strike && now-lastStrike>60){ lastStrike=now; const vel = Math.min(1, 0.35 + (st.source==="camera"? down/3 : Math.min(1,h.tipSpeed/2))); const pos=Math.min(1,Math.hypot(hx-cx,hy-cy)/r); ensureAudio(); playDrum(sources[me.id], me.inst==="timpani"?"timpani":"snare", AC.currentTime, vel, pos); strikeFlash=6; hitLog.push([now,vel]); } }
+    hitLog=hitLog.filter(h=>now-h[0]<3000); vg.fillStyle="#5fb98d"; hitLog.forEach(([tt,v],i)=>{ vg.fillRect(20+i*8, H-20-v*40, 5, v*40); });
+  } else if (me.fam==="woodwind"){
+    const closed = st.source==="camera" ? [L.curl[1],L.curl[2],L.curl[3],R.curl[1],R.curl[2],R.curl[3]].map(c=>c>0.55?1:0) : [keys.a,keys.s,keys.d,keys.j,keys.k,keys.l];
+    const n=closed.reduce((a,b)=>a+b,0);
+    if (micAnalyser){ micAnalyser.getFloatTimeDomainData(micData); let s=0; for (const v of micData) s+=v*v; const rms=Math.sqrt(s/micData.length); breath = breath*0.6 + Math.min(1, rms*9)*0.4; } else breath = space ? 1 : (R.pinch>0.7||L.pinch>0.7 ? 0.8 : 0);
+    if (AC) woodwind(n, breath, t);
+    const cx=W/2, cy=H*0.7; for(let i=0;i<6;i++){ const x=cx-95+i*38+(i>2?20:0); vg.fillStyle=closed[i]?"#a78bec":"#1e2532"; vg.strokeStyle="#3b4653"; vg.beginPath(); vg.arc(x,cy,13,0,7); vg.fill(); vg.stroke(); }
+    vg.fillStyle="#5fb98d"; vg.fillRect(cx-120, cy+40, 240*breath, 8); vg.strokeStyle="#3b4653"; vg.strokeRect(cx-120,cy+40,240,8);
+    vg.fillStyle="#7b8896"; vg.font="11px IBM Plex Mono"; vg.textAlign="center"; vg.fillText(`${n} keys closed · breath ${(breath*100).toFixed(0)}%`, cx, cy+66);
+  } else if (me.fam==="strings" && me.inst==="harp"){
+    const n=14, x0=W*0.25, x1=W*0.75, y0=H*0.5, y1=H*0.92; for(let i=0;i<n;i++){ const x=x0+(x1-x0)*i/(n-1); vg.strokeStyle = i===harpLast?"#a78bec":"#7b8896"; vg.lineWidth=1+ (i%7===0?1:0); vg.beginPath(); vg.moveTo(x,y0+i*3); vg.lineTo(x,y1); vg.stroke(); }
+    for (const h of [R,L]){ if(!h.present) continue; const hx=h.indexTip[0]*W, hy=h.indexTip[1]*H; if (hy>y0 && hy<y1 && (st.source==="camera" ? h.indexExtended : h.pinch>0.7)){ const i=Math.round((hx-x0)/(x1-x0)*(n-1)); if (i>=0&&i<n&&i!==h._harpIdx){ if (h._harpIdx!==undefined && AC){ const midi=KEY+SCALE[i%10]+12*Math.floor(i/10); playNote(sources[me.id], midi, AC.currentTime, 0.1, 0.9); harpLast=i; } h._harpIdx=i; } } else h._harpIdx=undefined; }
+  } else if (me.fam==="strings"){
+    const x0=W*0.15, x1=W*0.85, y=H*0.72; vg.strokeStyle="#7b8896"; vg.lineWidth=6; vg.beginPath(); vg.moveTo(x0,y); vg.lineTo(x1,y); vg.stroke();
+    for(let i=0;i<10;i++){ const x=x0+(x1-x0)*i/9; vg.strokeStyle=i===fbDegree?"#a78bec":"#3b4653"; vg.lineWidth=2; vg.beginPath(); vg.moveTo(x,y-18); vg.lineTo(x,y+18); vg.stroke(); }
+    const stopHand = st.source==="camera" && L.present ? L : R; fbDegree = Math.max(0,Math.min(9,Math.round((stopHand.indexTip[0]*W-x0)/(x1-x0)*9)));
+    const midi = KEY + 12*(me.oct-4) + SCALE[fbDegree];
+    const bowHand = st.source==="camera" ? R : R; const bowing = st.source==="camera" ? (R.present && R.pinch<0.5 && L.present) : R.pinch>0.7;
+    const speed = bowing ? Math.abs(bowHand.palmVel[1]) + Math.abs(bowHand.palmVel[0]) : 0;
+    if (AC) bow(midi, bowing?speed:0, t);
+    if (st.source==="camera" ? (R.pinch>0.7 && !R._pl) : false){ if (AC) playNote(sources[me.id], midi, AC.currentTime, 0.12, 0.9); } R._pl = R.pinch>0.7;
+    vg.fillStyle="#7b8896"; vg.font="11px IBM Plex Mono"; vg.textAlign="center"; vg.fillText(`degree ${fbDegree+1} · bow ${speed.toFixed(1)}`, W/2, y+40);
+  } else { vg.fillStyle="#7b8896"; vg.font="12px IBM Plex Mono"; vg.textAlign="center"; vg.fillText("listening seat", W/2, H*0.75); }
+  requestAnimationFrame(frame);
+}
+renderPlan(); requestAnimationFrame(frame);
+document.getElementById("foot").textContent = "Synthesised sections stand in for per-desk stems (the notes: resolve stems before real code). HRTF panning + one convolution reverb; your own seat's instrument is held 0.4 m in front of you.";
+</script></body></html>

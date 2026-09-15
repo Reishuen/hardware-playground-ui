@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VITURE Prototypes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="shared/proto.css">
+<style>
+body{overflow:auto}.wrap{max-width:900px;margin:0 auto;padding-inline:20px;padding-block:36px 60px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.5vw,42px);margin:.2em 0 0;line-height:1.06}
+p.lede{font-family:var(--serif);font-size:17px;color:var(--ink-soft);max-width:62ch;margin:14px 0 26px}
+ol{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+a.card{display:grid;grid-template-columns:2.4em 1fr;gap:12px;align-items:baseline;background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;color:inherit;text-decoration:none}
+a.card:hover{border-color:var(--accent)} a.card .n{font-family:var(--mono);font-size:12px;color:var(--ink-mute)}
+a.card b{font-family:var(--serif);font-size:19px;font-weight:600;display:block} a.card span{color:var(--ink-soft);font-size:13.5px}
+a.card .q{display:block;margin-top:4px;font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.note{margin-top:26px;font-size:12.5px;color:var(--ink-mute);max-width:70ch;line-height:1.55}
+.note b{color:var(--ink-soft)}
+</style></head><body><div class="wrap">
+<div class="eyebrow">viture · browser prototypes · no glasses required</div>
+<h1>Five sims, on your laptop</h1>
+<p class="lede">Every app from the brief, built to run before any hardware exists. Mouse and touch always work; turn on <em>webcam hands</em> in any of them for real skeletal hand tracking through your laptop camera — the same six-gesture grammar the Unity build will use, so what feels right here transfers.</p>
+<ol>
+<li><a class="card" href="orchestra/"><span class="n">01</span><div><b>Orchestra Seats</b><span>Zip into any of twenty seats and hear the piece from there — HRTF per-seat mix, own instrument loudest. Then play it: percussion by strike, woodwind by fingering + microphone breath, cello pitch-snapped, harp plucked.</span><span class="q">proves: does the per-seat mix give you chills? (the notes: stop here if not)</span></div></a></li>
+<li><a class="card" href="dj-deck/"><span class="n">02</span><div><b>Air Decks</b><span>Two loops at 124 and 128 BPM, scratch, pitch faders, crossfader, EQ kill, cue points, a crowd that follows the downbeat when you match.</span><span class="q">proves: can you beat-match with no haptics? measures audio latency</span></div></a></li>
+<li><a class="card" href="couture/"><span class="n">03</span><div><b>Couture Workshop</b><span>XPBD cloth on a dress form. Pin and drag, cut with a traced line, gather, smooth, stretch on the bias; silk / jersey / denim presets.</span><span class="q">proves: do grid-aligned cuts feel like pinking shears, or cheap?</span></div></a></li>
+<li><a class="card" href="air-cad/"><span class="n">04</span><div><b>Air-CAD</b><span>An L-bracket as a signed-distance field, raymarched. Carve with a traced finger, section it with a palm push, rotate, scale, boolean-subtract with a cancel window.</span><span class="q">proves: SDF carving at 96³ — where do thin features vanish?</span></div></a></li>
+<li><a class="card" href="air-paint/"><span class="n">05</span><div><b>Air-Painting</b><span>Same engine, operator flipped to min, nothing to load. Paint volumes in the air with depth from your hand's distance to the camera.</span><span class="q">proves: TRACE in 3D — the path every carving gesture depends on</span></div></a></li>
+</ol>
+<p class="note"><b>What this is not.</b> Not 6DoF, not world-locked, not a shoulder-mounted ARM chip: a webcam gives 2.5D hands (x, y and a relative depth) at whatever latency your laptop manages — each sim shows that number in its top bar. The two questions the hardware alone can answer are end-to-end latency on the glasses and whether blowing into a neckband microphone feels usable; everything else in the brief is testable here first.</p>
+</div></body></html>

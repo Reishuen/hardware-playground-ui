@@ -100,6 +100,25 @@ footer{margin-top:44px;padding-top:19px;border-top:1px solid var(--rule);font-si
   color:var(--ink-mute);display:grid;gap:8px;max-width:80ch}
 footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.protos{margin:34px 0 0;display:grid;gap:12px}
+.protos h2{font-family:var(--serif);font-size:24px;font-weight:600;margin:0}
+.protos .lede{font-family:var(--serif);font-style:italic;color:var(--ink-soft);max-width:70ch;margin:0}
+.pgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.pgrid a{display:grid;gap:4px;background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;padding:13px 15px;color:inherit;text-decoration:none}
+.pgrid a:hover{border-color:var(--accent)}
+.pgrid a b{font-family:var(--serif);font-size:17px;font-weight:600}
+.pgrid a span{font-size:12.5px;color:var(--ink-soft)}
+.pgrid a i{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--accent)}
+.chart{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;padding:14px 16px;display:grid;gap:8px}
+.chart h3{font-family:var(--serif);font-size:18px;font-weight:600;margin:0}
+.chart svg{width:100%;height:auto;display:block}
+.chart .ax{font-family:var(--mono);font-size:9px;fill:var(--ink-mute)}
+.chart .gl{stroke:var(--rule-soft)}
+.chart .noise{fill:var(--crit);opacity:.14}
+.chart .ln{fill:none;stroke-width:2}
+.chart .lb{font-family:var(--sans);font-size:10.5px;font-weight:600}
+.chart p{margin:0;font-size:12.5px;color:var(--ink-soft);max-width:80ch}
 </style>
 
 <div class="wrap">
@@ -145,6 +164,28 @@ needs a seventh interaction, it becomes a <strong>mode</strong>, not a gesture &
 which is exactly what playing an instrument is.</p>
 <div class="tblwrap"><table id="grammar"></table></div>
 
+
+<section class="protos" aria-label="Prototypes">
+  <h2>The five sims, running in your browser</h2>
+  <p class="lede">Built before the hardware, on purpose: every question in this brief except two — latency on the glasses, and whether blowing into a neckband mic feels usable — is answerable on a laptop. Mouse and touch always work; each sim also has real skeletal hand tracking through the webcam, using the same six-gesture grammar the Unity build will use.</p>
+  <div class="pgrid">
+    <a href="../prototypes/orchestra/"><b>Orchestra Seats</b><span>twenty seats, HRTF per-seat mix; play percussion, woodwind with mic breath, pitch-snapped cello, harp</span><i>proves: does the per-seat mix give you chills?</i></a>
+    <a href="../prototypes/dj-deck/"><b>Air Decks</b><span>scratch, pitch, crossfade, EQ kill, cue; a crowd that follows the downbeat when you match</span><i>proves: beat-matching with no haptics · measures audio latency</i></a>
+    <a href="../prototypes/couture/"><b>Couture Workshop</b><span>XPBD cloth on a dress form: pin, cut, gather, smooth, bias; silk / jersey / denim</span><i>proves: do grid cuts feel like pinking shears or cheap?</i></a>
+    <a href="../prototypes/air-cad/"><b>Air-CAD</b><span>an L-bracket as an SDF: carve, section, rotate, scale, subtract with a cancel window</span><i>proves: where thin features vanish at 96³</i></a>
+    <a href="../prototypes/air-paint/"><b>Air-Painting</b><span>same engine flipped to min; paint volumes in the air with hand depth</span><i>proves: TRACE in 3D</i></a>
+  </div>
+  <div class="chart"><h3>Why the violin is not buildable, and the cello is</h3>
+<svg viewBox="0 0 720 230" role="img" aria-label="Semitone spacing along the string versus hand-tracking noise">
+<line class="gl" x1="36" y1="194.0" x2="704" y2="194.0"/><text class="ax" x="30" y="197.0" text-anchor="end">0</text><line class="gl" x1="36" y1="153.1" x2="704" y2="153.1"/><text class="ax" x="30" y="156.1" text-anchor="end">5</text><line class="gl" x1="36" y1="112.2" x2="704" y2="112.2"/><text class="ax" x="30" y="115.2" text-anchor="end">10</text><line class="gl" x1="36" y1="71.3" x2="704" y2="71.3"/><text class="ax" x="30" y="74.3" text-anchor="end">15</text><line class="gl" x1="36" y1="30.4" x2="704" y2="30.4"/><text class="ax" x="30" y="33.4" text-anchor="end">20</text><text class="ax" x="36.0" y="207" text-anchor="middle">0</text><text class="ax" x="147.3" y="207" text-anchor="middle">4</text><text class="ax" x="258.7" y="207" text-anchor="middle">8</text><text class="ax" x="370.0" y="207" text-anchor="middle">12</text><text class="ax" x="481.3" y="207" text-anchor="middle">16</text><text class="ax" x="592.7" y="207" text-anchor="middle">20</text><text class="ax" x="704.0" y="207" text-anchor="middle">24</text><rect class="noise" x="36" y="112.2" width="668" height="40.9"/>
+<text class="ax" x="700" y="108.2" text-anchor="end" style="fill:var(--crit)">hand-tracking noise floor, 5–10 mm</text>
+<path class="ln" d="M36.0 44.8 L63.8 53.1 L91.7 61.0 L119.5 68.5 L147.3 75.5 L175.2 82.2 L203.0 88.5 L230.8 94.4 L258.7 100.0 L286.5 105.3 L314.3 110.2 L342.2 114.9 L370.0 119.4 L397.8 123.6 L425.7 127.5 L453.5 131.3 L481.3 134.8 L509.2 138.1 L537.0 141.2 L564.8 144.2 L592.7 147.0 L620.5 149.6 L648.3 152.1 L676.2 154.5 L704.0 156.7" style="stroke:var(--crit)"/><text class="lb" x="68" y="47" style="fill:var(--crit)">violin, 325 mm string</text>
+<path class="ln" d="M36.0 -122.9 L63.8 -105.1 L91.7 -88.3 L119.5 -72.4 L147.3 -57.5 L175.2 -43.4 L203.0 -30.1 L230.8 -17.5 L258.7 -5.6 L286.5 5.6 L314.3 16.2 L342.2 26.2 L370.0 35.6 L397.8 44.5 L425.7 52.9 L453.5 60.8 L481.3 68.3 L509.2 75.3 L537.0 82.0 L564.8 88.3 L592.7 94.2 L620.5 99.8 L648.3 105.1 L676.2 110.1 L704.0 114.8" style="stroke:var(--ok)"/><text class="lb" x="207" y="-38" style="fill:var(--ok)">cello, 690 mm string</text>
+<text class="ax" x="378" y="226" text-anchor="middle">semitones above the open string</text>
+<text class="ax" transform="translate(10 115) rotate(-90)" text-anchor="middle">mm between adjacent semitones</text>
+</svg>
+<p>Semitone spacing is L·2<sup>−n/12</sup>·(1−2<sup>−1/12</sup>): a violin's first-position semitone is 18.2 mm and by the 12th it is 9.1 mm — inside the tracking noise band. The cello starts at 38.7 mm and is still 19.4 mm an octave up. So: pitch-snap the fingerboard, or make it a cello. The orchestra prototype does the former.</p></div>
+</section>
 <footer>
   <div><strong>Three rules that decide whether this feels good at all.</strong>
   Every continuous gesture needs a visible proxy rendered <em>at the pinch</em>, not a
