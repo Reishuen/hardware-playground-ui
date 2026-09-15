@@ -119,16 +119,42 @@ footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5
 .chart .ln{fill:none;stroke-width:2}
 .chart .lb{font-family:var(--sans);font-size:10.5px;font-weight:600}
 .chart p{margin:0;font-size:12.5px;color:var(--ink-soft);max-width:80ch}
+
+.app{display:grid}
+.app .head{display:grid;grid-template-columns:30px 1fr auto;align-items:center;column-gap:13px;padding:15px 17px 10px;gap:4px}
+.app .head h3{font-size:18px;font-family:var(--serif);font-weight:600;margin:0}
+.app .head .ln{grid-column:2;font-size:13.5px;color:var(--ink-mute)}
+.app .head .num{font-family:var(--mono);font-size:19px;color:var(--ink-mute);grid-row:span 2}
+.app .head .chips{grid-row:span 2}
+.app .notes{padding:0 17px 14px 60px;display:grid;gap:9px 18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+@media (max-width:640px){.app .notes{padding-left:17px}}
+.app .notes dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:3px}
+.app .notes dd{margin:0;color:var(--ink-soft);font-size:13.5px}
+.app .notes code{font-family:var(--mono);font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:2px}
+.sim{position:relative;border-top:1px solid var(--rule-soft);background:var(--sunken);aspect-ratio:16/10;max-width:100%;overflow:hidden}
+@media (max-width:640px){.sim{aspect-ratio:4/5}}
+.sim iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:none}
+.sim.on iframe{display:block}
+.sim .launch{position:absolute;inset:0;display:grid;place-content:center;gap:10px;text-align:center;padding:20px}
+.sim.on .launch{display:none}
+.sim .launch b{font-family:var(--serif);font-size:20px;font-weight:600}
+.sim .launch span{font-size:13px;color:var(--ink-soft);max-width:52ch}
+.sim .launch .pv{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.sim .launch button{font:inherit;font-size:14px;cursor:pointer;background:var(--accent);color:#fff;border:0;border-radius:2px;padding:9px 20px;justify-self:center;margin-top:6px}
+.sim .launch button:hover{filter:brightness(1.1)}
+.simbar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 17px;border-top:1px solid var(--rule-soft);font-family:var(--mono);font-size:10.5px;color:var(--ink-mute)}
+.simbar a{color:var(--accent)} .simbar .sp{flex:1}
+.simbar button{font:inherit;font-family:var(--mono);font-size:10.5px;cursor:pointer;background:var(--surface-2);border:1px solid var(--rule);border-radius:2px;padding:3px 8px;color:var(--ink-soft)}
 </style>
 
 <div class="wrap">
 <header>
   <div class="eyebrow">hardware-playground &middot; project 01 &middot; VITURE XR</div>
   <h1>VITURE Spatial Brief</h1>
-  <p class="standfirst">Four hand-gesture apps, and the research that decides which
-  glasses to buy and what order to build in. This is a <em>design brief, not a
-  prototype</em> &mdash; nothing here has run on hardware yet, because the cheap tests
-  come first.</p>
+  <p class="standfirst">Five hand-gesture apps &mdash; the research that decides which
+  glasses to buy, and <em>every app running right here in the browser</em>, mouse or
+  webcam hands, before any hardware exists. Nothing has run on the glasses yet; everything
+  that can be tested without them is on this page.</p>
 </header>
 
 <div class="buy">
@@ -146,9 +172,11 @@ footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5
   needs no glasses and no hand tracking, and it gates the most expensive app.</p>
 </div>
 
-<h2 class="sec">The four apps</h2>
-<p class="dek">Ranked by whether you will still be using them in a month. Click any app
-for the finding that shapes its build.</p>
+<h2 class="sec">Five apps, five sims</h2>
+<p class="dek">Ranked by whether you will still be using them in a month. Each one is the
+design finding that shapes it, and then the thing itself &mdash; press <strong>launch</strong>
+to run it in place, or open it full-screen. Turn on <em>webcam hands</em> inside any sim for
+real skeletal hand tracking through the same six-gesture grammar the Unity build will use.</p>
 <div class="apps" id="apps"></div>
 
 <h2 class="sec">Instrument families are three different problems</h2>
@@ -156,26 +184,7 @@ for the finding that shapes its build.</p>
 how well hand tracking can serve them. This is the analysis that decides what the
 orchestra app actually ships.</p>
 <div class="fams" id="fams"></div>
-
-<h2 class="sec">One gesture grammar, six primitives</h2>
-<p class="dek">Six is the budget. Every additional gesture costs recognition reliability,
-because the tracker confuses neighbouring poses, and costs the user memory. If an app
-needs a seventh interaction, it becomes a <strong>mode</strong>, not a gesture &mdash;
-which is exactly what playing an instrument is.</p>
-<div class="tblwrap"><table id="grammar"></table></div>
-
-
-<section class="protos" aria-label="Prototypes">
-  <h2>The five sims, running in your browser</h2>
-  <p class="lede">Built before the hardware, on purpose: every question in this brief except two — latency on the glasses, and whether blowing into a neckband mic feels usable — is answerable on a laptop. Mouse and touch always work; each sim also has real skeletal hand tracking through the webcam, using the same six-gesture grammar the Unity build will use.</p>
-  <div class="pgrid">
-    <a href="../prototypes/orchestra/"><b>Orchestra Seats</b><span>twenty seats, HRTF per-seat mix; play percussion, woodwind with mic breath, pitch-snapped cello, harp</span><i>proves: does the per-seat mix give you chills?</i></a>
-    <a href="../prototypes/dj-deck/"><b>Air Decks</b><span>scratch, pitch, crossfade, EQ kill, cue; a crowd that follows the downbeat when you match</span><i>proves: beat-matching with no haptics · measures audio latency</i></a>
-    <a href="../prototypes/couture/"><b>Couture Workshop</b><span>XPBD cloth on a dress form: pin, cut, gather, smooth, bias; silk / jersey / denim</span><i>proves: do grid cuts feel like pinking shears or cheap?</i></a>
-    <a href="../prototypes/air-cad/"><b>Air-CAD</b><span>an L-bracket as an SDF: carve, section, rotate, scale, subtract with a cancel window</span><i>proves: where thin features vanish at 96³</i></a>
-    <a href="../prototypes/air-paint/"><b>Air-Painting</b><span>same engine flipped to min; paint volumes in the air with hand depth</span><i>proves: TRACE in 3D</i></a>
-  </div>
-  <div class="chart"><h3>Why the violin is not buildable, and the cello is</h3>
+<div class="chart"><h3>Why the violin is not buildable, and the cello is</h3>
 <svg viewBox="0 0 720 230" role="img" aria-label="Semitone spacing along the string versus hand-tracking noise">
 <line class="gl" x1="36" y1="194.0" x2="704" y2="194.0"/><text class="ax" x="30" y="197.0" text-anchor="end">0</text><line class="gl" x1="36" y1="153.1" x2="704" y2="153.1"/><text class="ax" x="30" y="156.1" text-anchor="end">5</text><line class="gl" x1="36" y1="112.2" x2="704" y2="112.2"/><text class="ax" x="30" y="115.2" text-anchor="end">10</text><line class="gl" x1="36" y1="71.3" x2="704" y2="71.3"/><text class="ax" x="30" y="74.3" text-anchor="end">15</text><line class="gl" x1="36" y1="30.4" x2="704" y2="30.4"/><text class="ax" x="30" y="33.4" text-anchor="end">20</text><text class="ax" x="36.0" y="207" text-anchor="middle">0</text><text class="ax" x="147.3" y="207" text-anchor="middle">4</text><text class="ax" x="258.7" y="207" text-anchor="middle">8</text><text class="ax" x="370.0" y="207" text-anchor="middle">12</text><text class="ax" x="481.3" y="207" text-anchor="middle">16</text><text class="ax" x="592.7" y="207" text-anchor="middle">20</text><text class="ax" x="704.0" y="207" text-anchor="middle">24</text><rect class="noise" x="36" y="112.2" width="668" height="40.9"/>
 <text class="ax" x="700" y="108.2" text-anchor="end" style="fill:var(--crit)">hand-tracking noise floor, 5–10 mm</text>
@@ -185,7 +194,16 @@ which is exactly what playing an instrument is.</p>
 <text class="ax" transform="translate(10 115) rotate(-90)" text-anchor="middle">mm between adjacent semitones</text>
 </svg>
 <p>Semitone spacing is L·2<sup>−n/12</sup>·(1−2<sup>−1/12</sup>): a violin's first-position semitone is 18.2 mm and by the 12th it is 9.1 mm — inside the tracking noise band. The cello starts at 38.7 mm and is still 19.4 mm an octave up. So: pitch-snap the fingerboard, or make it a cello. The orchestra prototype does the former.</p></div>
-</section>
+
+
+<h2 class="sec">One gesture grammar, six primitives</h2>
+<p class="dek">Six is the budget. Every additional gesture costs recognition reliability,
+because the tracker confuses neighbouring poses, and costs the user memory. If an app
+needs a seventh interaction, it becomes a <strong>mode</strong>, not a gesture &mdash;
+which is exactly what playing an instrument is.</p>
+<div class="tblwrap"><table id="grammar"></table></div>
+
+
 <footer>
   <div><strong>Three rules that decide whether this feels good at all.</strong>
   Every continuous gesture needs a visible proxy rendered <em>at the pinch</em>, not a
@@ -201,34 +219,36 @@ which is exactly what playing an instrument is.</p>
 </div>
 
 <script>
-const APPS = [{"id": "orchestra", "name": "Virtual Orchestra", "tag": "reworked", "line": "Zip into any player's first-person seat and play their instrument.", "sixdof": true, "why6": "your hands must hit a world-locked drum head or keypad; under 3DoF leaning in moves the instrument, not your hand", "real": "The per-seat <em>mix</em> is the product, not the instrument simulation. Orchestral players hear a completely different piece from where they sit, and a conductor's-podium mix is on every recording ever made while the second bassoon's chair is on none of them.", "first": "Seat teleport with per-seat mix, listening only. No hand tracking. Already worth using.", "risk": "Needs multitrack per-desk orchestral stems. That is a licensing problem, not an engineering one, and it is not cheap.", "rank": 1}, {"id": "aircad", "name": "Air-CAD / Air-painting", "tag": "lowest risk", "line": "Project a CAD model into the room; carve, slice and section it with your hands.", "sixdof": true, "why6": "you inspect a model by moving your head through and around it", "real": "Represent the model as a <strong>signed distance field, not a mesh</strong>. Carving becomes <code>max(d, -brush)</code> and slicing becomes a shader clip &mdash; one line each, instead of runtime CSG booleans that commercial CAD kernels get wrong.", "first": "Air-painting. Same app with the operator flipped to <code>min</code>, additive, and no model to load &mdash; so no dependency on project 04.", "risk": "256&sup3; field is 32 MB and gives ~4 mm voxels on a 1 m model. Thin features vanish; keep a mesh alongside for display.", "rank": 2}, {"id": "couture", "name": "Couture Workshop", "tag": "craft depth", "line": "A dummy you walk around; cut, drape and pin real fabric onto it.", "sixdof": true, "why6": "the whole interaction is walking around a dummy to see the drape", "real": "Draping is easy &mdash; XPBD at 2&ndash;5k particles runs fine on mobile. <strong>Cutting is the hard part</strong>, because it means topology change at runtime. Grid-aligned cuts sidestep it entirely: a cut just deletes distance constraints, so the solver never sees a topology change.", "first": "One static panel draped over the dummy, then fabric presets with bias asymmetry. Stop there if the drape does not feel good.", "risk": "Grid cuts quantise to ~1.6 cm at a 60&times;60 grid &mdash; pinking shears, not a scalpel. Charming or cheap is a taste call, testable with a mouse.", "rank": 3}, {"id": "dj", "name": "Virtual DJ Deck", "tag": "highest risk", "line": "Two world-locked decks, plus a crowd that reacts to what you play.", "sixdof": true, "why6": "decks must hold position when you lean in to nudge a platter", "real": "The core risk is hardware-independent: <strong>can you beat-match with no haptics?</strong> No platter friction, no detent, no weight. No amount of engineering supplies the missing force feedback.", "first": "The browser prototype, before committing anything. This is the one most likely to fail on a question the glasses cannot answer.", "risk": "If the latency budget lands over 50 ms this app is dead outright.", "rank": 4}], FAMS = [{"name": "Percussion", "verdict": "works", "cls": "ok", "body": "The only family where hand tracking is genuinely <em>sufficient</em>. A strike is a downward velocity peak crossing the drum-head plane &mdash; position and velocity are exactly what tracking gives you. <strong>Velocity maps to loudness</strong>, which is how real percussion works, so dynamics come free and feel right. Position across the head gives timbre.", "missing": "No rebound, so rolls and buzz-rolls are out. Single strokes, mallets, timpani, cymbals and the auxiliary kit are all in.", "budget": "under 20 ms"}, {"name": "Woodwinds", "verdict": "works &mdash; via the microphone", "cls": "warn", "body": "Fingering is <strong>discrete</strong> &mdash; a key is open or closed, a binary state per finger, which is what skeletal tracking is reliable at. Breath is the problem: real dynamics, articulation and attack all come from breath pressure and embouchure, and the glasses see neither.", "missing": "<strong>The fix is to blow into the microphone.</strong> A low-frequency-weighted amplitude envelope with a noise gate gives a usable continuous pressure signal at low latency, and tonguing shows up as a sharp transient &mdash; so you get articulation too. This turns woodwinds from unplayable into the <em>most expressive</em> family, and it needs no gesture vocabulary at all. You just blow.", "budget": "50 ms (a sustained tone hides latency)"}, {"name": "Bowed strings", "verdict": "violin is not buildable", "cls": "crit", "body": "Two independent blockers. <strong>Pitch precision:</strong> a semitone on a violin E string is ~18 mm near the nut and ~6 mm in high positions, against a hand-tracking noise floor of 5&ndash;10 mm &mdash; the tracking error is the size of the interval. <strong>Bow contact:</strong> tone is a continuous function of speed, pressure and distance from the bridge, with no force feedback available.", "missing": "Three honest options: <strong>pitch-snap the fingerboard</strong> so finger position picks a scale degree (always in tune, genuinely playable); <strong>use plucked strings</strong> &mdash; harp and pizzicato only need you to hit the right string, not stop it precisely; or <strong>make it a cello</strong>, where the intervals are bigger. An out-of-tune violin is not a fun toy, it is an unpleasant one.", "budget": "50 ms"}], GRAMMAR = [["PINCH", "thumb tip ↔ index tip < 25 mm", "select a seat", "grab fader", "pin fabric", "grab &amp; move model"], ["PALM_PUSH", "palm normal · palm velocity", "exit a seat", "kill an EQ band", "smooth a drape", "push a section plane"], ["SPREAD", "inter-hand distance", "widen the ensemble", "crossfade A↔B", "stretch on the bias", "scale model"], ["TRACE", "index tip position stream", "bow / strum path", "scratch the platter", "<strong>cut line</strong>", "<strong>carve path</strong>"], ["FIST", "mean finger curl angle", "hold / fermata", "cue point", "bunch / gather", "boolean subtract"], ["POINT_DWELL", "tip velocity below threshold", "select a player", "select a deck", "select a panel", "select a face"]];
-let open = "orchestra";
+const APPS = [{"id": "orchestra", "proto": "orchestra", "sim": "Orchestra Seats", "proves": "does the per-seat mix give you chills? the notes say stop here if not", "name": "Virtual Orchestra", "tag": "reworked", "line": "Zip into any player's first-person seat and play their instrument.", "sixdof": true, "why6": "your hands must hit a world-locked drum head or keypad; under 3DoF leaning in moves the instrument, not your hand", "real": "The per-seat <em>mix</em> is the product, not the instrument simulation. Orchestral players hear a completely different piece from where they sit, and a conductor's-podium mix is on every recording ever made while the second bassoon's chair is on none of them.", "first": "Seat teleport with per-seat mix, listening only. No hand tracking. Already worth using.", "risk": "Needs multitrack per-desk orchestral stems. That is a licensing problem, not an engineering one, and it is not cheap.", "rank": 1}, {"id": "aircad", "proto": "air-cad", "sim": "Air-CAD", "proves": "SDF carving at 96³ — where thin features vanish", "name": "Air-CAD", "tag": "lowest risk", "line": "Project a CAD model into the room; carve, slice and section it with your hands.", "sixdof": true, "why6": "you inspect a model by moving your head through and around it", "real": "Represent the model as a <strong>signed distance field, not a mesh</strong>. Carving becomes <code>max(d, -brush)</code> and slicing becomes a shader clip &mdash; one line each, instead of runtime CSG booleans that commercial CAD kernels get wrong.", "first": "Air-painting. Same app with the operator flipped to <code>min</code>, additive, and no model to load &mdash; so no dependency on project 04.", "risk": "256&sup3; field is 32 MB and gives ~4 mm voxels on a 1 m model. Thin features vanish; keep a mesh alongside for display.", "rank": 2}, {"id": "airpaint", "proto": "air-paint", "sim": "Air-Painting", "proves": "TRACE in 3D — the path every carving gesture depends on", "name": "Air-painting", "tag": "build first", "line": "Paint volumes in the air. The same engine as Air-CAD with the operator flipped to min, and nothing to load.", "sixdof": true, "why6": "a stroke has to stay where you put it in the room while you walk around it", "real": "Air-painting is Air-CAD with one character changed: <code>min</code> instead of <code>max</code>. Building it first exercises the whole TRACE-in-3D path &mdash; finger depth, brush spacing along a path, voxel upload &mdash; without any dependency on project 04 producing a model.", "first": "This. It is the lowest-risk thing in the brief and it de-risks the most expensive one.", "risk": "Depth from a single webcam is relative and noisy; on the glasses it comes from 6DoF hand tracking and this problem goes away.", "rank": 2.5}, {"id": "couture", "proto": "couture", "sim": "Couture Workshop", "proves": "do grid-aligned cuts feel like pinking shears, or cheap?", "name": "Couture Workshop", "tag": "craft depth", "line": "A dummy you walk around; cut, drape and pin real fabric onto it.", "sixdof": true, "why6": "the whole interaction is walking around a dummy to see the drape", "real": "Draping is easy &mdash; XPBD at 2&ndash;5k particles runs fine on mobile. <strong>Cutting is the hard part</strong>, because it means topology change at runtime. Grid-aligned cuts sidestep it entirely: a cut just deletes distance constraints, so the solver never sees a topology change.", "first": "One static panel draped over the dummy, then fabric presets with bias asymmetry. Stop there if the drape does not feel good.", "risk": "Grid cuts quantise to ~1.6 cm at a 60&times;60 grid &mdash; pinking shears, not a scalpel. Charming or cheap is a taste call, testable with a mouse.", "rank": 3}, {"id": "dj", "proto": "dj-deck", "sim": "Air Decks", "proves": "can you beat-match with no haptics? measures audio latency", "name": "Virtual DJ Deck", "tag": "highest risk", "line": "Two world-locked decks, plus a crowd that reacts to what you play.", "sixdof": true, "why6": "decks must hold position when you lean in to nudge a platter", "real": "The core risk is hardware-independent: <strong>can you beat-match with no haptics?</strong> No platter friction, no detent, no weight. No amount of engineering supplies the missing force feedback.", "first": "The browser prototype, before committing anything. This is the one most likely to fail on a question the glasses cannot answer.", "risk": "If the latency budget lands over 50 ms this app is dead outright.", "rank": 4}], FAMS = [{"name": "Percussion", "verdict": "works", "cls": "ok", "body": "The only family where hand tracking is genuinely <em>sufficient</em>. A strike is a downward velocity peak crossing the drum-head plane &mdash; position and velocity are exactly what tracking gives you. <strong>Velocity maps to loudness</strong>, which is how real percussion works, so dynamics come free and feel right. Position across the head gives timbre.", "missing": "No rebound, so rolls and buzz-rolls are out. Single strokes, mallets, timpani, cymbals and the auxiliary kit are all in.", "budget": "under 20 ms"}, {"name": "Woodwinds", "verdict": "works &mdash; via the microphone", "cls": "warn", "body": "Fingering is <strong>discrete</strong> &mdash; a key is open or closed, a binary state per finger, which is what skeletal tracking is reliable at. Breath is the problem: real dynamics, articulation and attack all come from breath pressure and embouchure, and the glasses see neither.", "missing": "<strong>The fix is to blow into the microphone.</strong> A low-frequency-weighted amplitude envelope with a noise gate gives a usable continuous pressure signal at low latency, and tonguing shows up as a sharp transient &mdash; so you get articulation too. This turns woodwinds from unplayable into the <em>most expressive</em> family, and it needs no gesture vocabulary at all. You just blow.", "budget": "50 ms (a sustained tone hides latency)"}, {"name": "Bowed strings", "verdict": "violin is not buildable", "cls": "crit", "body": "Two independent blockers. <strong>Pitch precision:</strong> a semitone on a violin E string is ~18 mm near the nut and ~6 mm in high positions, against a hand-tracking noise floor of 5&ndash;10 mm &mdash; the tracking error is the size of the interval. <strong>Bow contact:</strong> tone is a continuous function of speed, pressure and distance from the bridge, with no force feedback available.", "missing": "Three honest options: <strong>pitch-snap the fingerboard</strong> so finger position picks a scale degree (always in tune, genuinely playable); <strong>use plucked strings</strong> &mdash; harp and pizzicato only need you to hit the right string, not stop it precisely; or <strong>make it a cello</strong>, where the intervals are bigger. An out-of-tune violin is not a fun toy, it is an unpleasant one.", "budget": "50 ms"}], GRAMMAR = [["PINCH", "thumb tip ↔ index tip < 25 mm", "select a seat", "grab fader", "pin fabric", "grab &amp; move model"], ["PALM_PUSH", "palm normal · palm velocity", "exit a seat", "kill an EQ band", "smooth a drape", "push a section plane"], ["SPREAD", "inter-hand distance", "widen the ensemble", "crossfade A↔B", "stretch on the bias", "scale model"], ["TRACE", "index tip position stream", "bow / strum path", "scratch the platter", "<strong>cut line</strong>", "<strong>carve path</strong>"], ["FIST", "mean finger curl angle", "hold / fermata", "cue point", "bunch / gather", "boolean subtract"], ["POINT_DWELL", "tip velocity below threshold", "select a player", "select a deck", "select a panel", "select a face"]];
+APPS.sort((a,b)=>a.rank-b.rank);
 
 function renderApps(){
   document.getElementById("apps").innerHTML = APPS.map((a,i) => `
-    <article class="app">
-      <button aria-expanded="${open===a.id}" data-id="${a.id}">
-        <span class="num">${a.rank}</span>
+    <article class="app" id="app-${a.id}">
+      <div class="head">
+        <span class="num">${i+1}</span>
         <h3>${a.name}</h3>
-        <span class="chips">
-          <span class="chip tag">${a.tag}</span>
-          <span class="chip dof">6DoF</span>
-        </span>
+        <span class="chips"><span class="chip tag">${a.tag}</span><span class="chip dof">6DoF</span></span>
         <span class="ln">${a.line}</span>
-      </button>
-      ${open===a.id ? `<dl class="body">
+      </div>
+      <dl class="notes">
         <div><dt>The finding that shapes it</dt><dd>${a.real}</dd></div>
         <div><dt>Build this first</dt><dd>${a.first}</dd></div>
         <div><dt>Why it needs 6DoF</dt><dd>${a.why6}</dd></div>
         <div><dt>Main risk</dt><dd>${a.risk}</dd></div>
-      </dl>` : ""}
+      </dl>
+      <div class="sim" id="sim-${a.id}">
+        <iframe title="${a.sim}" allow="camera; microphone; autoplay" loading="lazy"></iframe>
+        <div class="launch"><b>${a.sim}</b><span class="pv">proves: ${a.proves}</span><span>Runs in place. Mouse and touch work; webcam hands is a button inside.</span><button data-p="${a.proto}" data-id="${a.id}">launch</button></div>
+      </div>
+      <div class="simbar"><span>../prototypes/${a.proto}/</span><span class="sp"></span><button data-stop="${a.id}">stop</button><a href="../prototypes/${a.proto}/" target="_blank" rel="noopener">open full-screen ↗</a></div>
     </article>`).join("");
-  document.querySelectorAll(".app > button").forEach(b =>
-    b.addEventListener("click", () => {
-      open = open === b.dataset.id ? "" : b.dataset.id; renderApps();
-    }));
+  document.querySelectorAll(".launch button").forEach(b => b.addEventListener("click", () => {
+    const sim = document.getElementById("sim-"+b.dataset.id), f = sim.querySelector("iframe");
+    f.src = "../prototypes/"+b.dataset.p+"/"; sim.classList.add("on"); }));
+  document.querySelectorAll(".simbar button").forEach(b => b.addEventListener("click", () => {
+    const sim = document.getElementById("sim-"+b.dataset.stop), f = sim.querySelector("iframe"); f.src = "about:blank"; sim.classList.remove("on"); }));
 }
-
 document.getElementById("fams").innerHTML = FAMS.map(f => `
   <div class="fam ${f.cls}">
     <div class="vd">${f.verdict}</div>
