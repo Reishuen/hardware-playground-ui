@@ -104,6 +104,78 @@ footer{margin-top:44px;padding-top:19px;border-top:1px solid var(--rule);font-si
   color:var(--ink-mute);display:grid;gap:8px;max-width:80ch}
 footer a{color:var(--accent)} footer code{font-family:var(--mono);font-size:11.5px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+
+/* ---- architecture diagrams ---------------------------------------------------- */
+.arch{margin-top:30px;display:grid;gap:12px}
+.arch h2{font-family:var(--serif);font-size:24px;font-weight:600;margin:0}
+.arch .lede{font-family:var(--serif);font-style:italic;color:var(--ink-soft);max-width:72ch;margin:0}
+.diag{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;padding:12px 14px;display:grid;gap:8px;overflow-x:auto}
+.diag .dt{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.diag .dt b{font-family:var(--serif);font-size:17px;font-weight:600}
+.diag .dt span{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute)}
+.diag .dt a{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.diag svg{display:block;width:100%;height:auto;min-width:760px}
+.diag .bx{fill:var(--surface-2);stroke:var(--rule)}
+.diag .bx.brain{stroke:var(--accent);stroke-width:1.5}
+.diag .tt{font-family:var(--sans);font-size:11.5px;font-weight:600;fill:var(--ink)}
+.diag .md{font-family:var(--mono);font-size:9px;fill:var(--accent)}
+.diag .nt{font-family:var(--sans);font-size:9.5px;fill:var(--ink-soft)}
+.diag .ar{stroke:var(--ink-mute);stroke-width:1.2;fill:none;marker-end:url(#darr)}
+.diag .ar.fb{stroke:var(--crit);stroke-dasharray:4 4}
+.diag .al{font-family:var(--mono);font-size:8.5px;fill:var(--ink-mute)}
+.diag .fact{font-size:12.5px;color:var(--ink-soft);margin:0;max-width:90ch}
+/* ---- task environment ---------------------------------------------------------- */
+.env{grid-column:1/-1;display:grid;gap:10px}
+.env .envhead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.env .envhead .pl{margin:0}
+.env .autob{font:inherit;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:4px 9px;color:var(--ink-soft)}
+.env .autob[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+canvas.world{width:100%;display:block;background:var(--sunken);border-radius:2px;aspect-ratio:16/5;max-width:100%}
+@media (max-width:640px){canvas.world{aspect-ratio:16/9}}
+.envnote{font-size:12px;color:var(--ink-mute);margin:0;max-width:88ch}
+/* ---- live simulator ------------------------------------------------------------ */
+:root{--sens:var(--accent);--motor:var(--warn);--mod:#6b4fb8;--rew:var(--crit)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--mod:#a78bec}}
+:root[data-theme="dark"]{--mod:#a78bec}
+.lab{margin-top:22px;display:grid;gap:14px;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+@media (max-width:840px){.lab{grid-template-columns:1fr}}
+.labhead{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+.labhead h2{font-family:var(--serif);font-size:22px;font-weight:600;margin:0}
+.labhead .lstat{font-family:var(--mono);font-size:11px;color:var(--ink-mute);font-variant-numeric:tabular-nums}
+.panel{background:var(--surface);border:1px solid var(--rule-soft);border-radius:3px;padding:14px 15px;display:grid;gap:10px;align-content:start;min-width:0}
+.panel .pl{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-mute)}
+.circuit{width:100%;height:auto;display:block;background:var(--sunken);border-radius:2px}
+.circuit .edge{stroke:var(--ink-mute);stroke-width:1.2;fill:none;opacity:.55;marker-end:url(#arr)}
+.circuit .edge.weak{stroke-dasharray:3 3;opacity:.35}
+.circuit .nl{font-family:var(--sans);font-size:10.5px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.circuit .nc{font-family:var(--mono);font-size:8.5px;fill:var(--ink-mute);text-anchor:middle}
+.circuit .nh{font-family:var(--mono);font-size:11px;fill:var(--ink);text-anchor:middle;font-variant-numeric:tabular-nums}
+.circuit .dead .nl,.circuit .dead .nh{text-decoration:line-through;fill:var(--ink-mute)}
+.circuit .ring{fill:none;stroke-width:1.5}
+.circuit .core{stroke:none}
+.ctrls{display:grid;gap:9px}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.ctl label{font-size:12.5px;color:var(--ink-soft)}
+.ctl label b{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-mute);display:block;font-weight:500}
+.ctl output{font-family:var(--mono);font-size:11.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.ctl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent);margin:0}
+.abl{display:flex;flex-wrap:wrap;gap:6px}
+.abl button{font:inherit;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:4px 9px;color:var(--ink-soft);display:inline-flex;gap:6px;align-items:center}
+.abl button i{width:8px;height:8px;border-radius:50%;background:var(--rc);display:inline-block}
+.abl button[aria-pressed="true"]{border-color:var(--crit);color:var(--crit);text-decoration:line-through}
+.abl button:hover{border-color:var(--ink-mute);color:var(--ink)}
+.runrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.runrow button{font:inherit;font-size:12.5px;cursor:pointer;background:var(--surface-2);border:1px solid var(--rule);border-radius:2px;padding:5px 12px;color:var(--ink)}
+.runrow button:hover{border-color:var(--ink-mute)}
+.runrow .act2{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-left:auto;font-variant-numeric:tabular-nums}
+canvas.raster,canvas.traces{width:100%;display:block;background:var(--sunken);border-radius:2px}
+.rk{display:flex;flex-wrap:wrap;gap:10px;font-family:var(--mono);font-size:10px;color:var(--ink-mute)}
+.rk i{display:inline-flex;align-items:center;gap:5px;font-style:normal}
+.rk i b{width:9px;height:9px;border-radius:2px;background:var(--rc);display:inline-block}
+.labnote{grid-column:1/-1;font-size:12.5px;color:var(--ink-mute);max-width:88ch;margin:0}
+.labnote b{color:var(--ink-soft);font-weight:600}
 </style>
 
 <div class="wrap">
@@ -143,7 +215,39 @@ consistently across tasks?&rdquo;</em> &mdash; which is the actually interesting
 So each demo here is ~80 lines: which neurons to drive, and which to read.</p>
 
 <nav class="tabs" id="tabs" aria-label="Demos"></nav>
+
+<section class="lab" aria-label="Live simulation">
+  <div class="labhead"><h2>The fly, running</h2><div class="lstat" id="lstat"></div></div>
+  <div class="panel">
+    <div class="pl">circuit &mdash; fill is live firing rate; click a population to ablate it</div>
+    <svg class="circuit" id="circuit" viewBox="0 0 560 300" role="img" aria-label="Circuit diagram with live firing rates"></svg>
+    <div class="runrow"><button id="runbtn">pause</button><button id="resetbtn">reset</button><span class="act2" id="act2"></span></div>
+    <div class="pl">stimulus &mdash; the observation this demo encodes into current</div>
+    <div class="ctrls" id="ctrls"></div>
+  </div>
+  <div class="panel">
+    <div class="pl">spike raster &mdash; one row per neuron in the demo populations, last 4 s</div>
+    <canvas class="raster" id="raster" height="220"></canvas>
+    <div class="pl">population rate, Hz &mdash; last 4 s</div>
+    <canvas class="traces" id="traces" height="150"></canvas>
+    <div class="rk" id="rkey"></div>
+  </div>
+  <div class="panel env">
+    <div class="envhead"><div class="pl" id="envtitle">task environment &mdash; what the fly sees, and what it does about it</div>
+      <button class="autob" id="autob" aria-pressed="true">auto-stimulus from the world</button></div>
+    <canvas class="world" id="world" height="300"></canvas>
+    <p class="envnote" id="envnote"></p>
+  </div>
+  <p class="labnote">This is the harness&rsquo;s <b>leaky integrate-and-fire model, ported line for line</b> &mdash; Shiu et al.&rsquo;s fitted constants (&tau;<sub>mem</sub> 20 ms, &tau;<sub>syn</sub> 5 ms, 10 mV threshold, 2.2 ms refractory, 0.1 ms step), the same 4,000-neuron synthetic connectome (40 edges/neuron, log-normal synapse counts, Dale&rsquo;s-principle signs, all-to-all demo pathways at 0.0015 V) and the same encode/decode thresholds. It differs from <code>python -m harness.smoke</code> only in the random-number generator, so rates agree in band, not to the decimal. <b>The connectome is synthetic</b>: the pathways are real names wired the way the demos assume, not measured MaleCNS circuits.</p>
+</section>
+
 <div class="demo" id="demo"></div>
+
+<section class="arch" aria-label="Architecture">
+  <h2>How each one was built &mdash; read from the repos</h2>
+  <p class="lede">Each upstream project is one pipeline: a source of frames, a retina that turns them into current, a brain, a readout, and something that acts. Module names are the repo&rsquo;s own. The shared harness underneath is the same shape with the expensive middle factored out.</p>
+  <div id="archs"></div>
+</section>
 
 <footer>
   <div><strong>Two bugs this found by being run rather than read.</strong> External
@@ -163,7 +267,7 @@ So each demo here is ~80 lines: which neurons to drive, and which to read.</p>
 </div>
 
 <script>
-const DEMOS = [{"id": "doomscroll", "name": "Doomscrolling", "ask": "the fly doomscrolling", "repo": "https://github.com/ranagwho/Fruitfly-Doomscroller", "repoName": "FlyScroll", "status": "public repo", "stack": "Python", "idea": "Visual activity plus mushroom-body activity gate the scroll decision, so the fly keeps scrolling while the current frame is still novel to it and stops once it habituates.", "why": "The most conceptually interesting of the four. The mushroom body is the fly's associative-learning centre and habituation there is real, well-characterised biology &mdash; so doomscrolling-as-habituation-failure is a genuine hypothesis, not a joke.", "poke": "Ablate the mushroom body output neurons and see whether it scrolls forever.", "pops": [["visual", "LC11, LC15", "sensory", 52.6], ["kenyon", "KCg-m, KCab-c", "sensory", 60.1], ["mbon", "MBON01, MBON11", "motor", 60.1], ["dan", "PPL101, PAM11", "reward", 0.0]], "action": "{'scroll': True, 'engagement': 60.1}"}, {"id": "stonks", "name": "Trading stocks", "ask": "the fly trading stocks", "repo": "https://github.com/nftechie/stonkfly", "repoName": "Stonkfly", "status": "public repo", "stack": "Python", "idea": "Price charts go in as images to the visual system; the connectome's dopaminergic circuits are wired to P&amp;L.", "why": "Read this honestly: a fly brain has no market prior, so this is a randomly-initialised sparse recurrent net with a reward signal. Expect noise. Its value is as a <strong>plumbing test</strong> &mdash; if the reward wiring is right, the fly should at minimum learn to stop repeating trades that are immediately punished, and that finding transfers to Doom where reward actually matters.", "poke": "<strong>Paper only. Never point this at a live account.</strong>", "pops": [["visual", "LC11, LC15, LC4", "sensory", 32.4], ["mbon", "MBON01, MBON11", "motor", 30.0], ["dan_reward", "PAM11", "reward", 0.0], ["dan_punish", "PPL101", "reward", 0.0]], "action": "{'side': 'buy', 'confidence': 1.0, 'paper': True}"}, {"id": "doom", "name": "Doom", "ask": "the fly playing Doom on a keyboard", "repo": "https://github.com/eganeganegan/flydoom", "repoName": "FlyDoom", "status": "public repo", "stack": "Python + ViZDoom", "idea": "Each frame stimulates visual sensory neurons; descending neurons map to game controls; dopaminergic circuits supply reinforcement. ~6,000 playthroughs so far and it has not finished the game.", "why": "<strong>Start with FlyDoom, not Doomfly</strong> &mdash; it compares the connectome-constrained sparse controller against baselines. Without a baseline you cannot tell whether the fly's anatomy is doing anything or whether any sparse random net of that size performs identically.", "poke": "The shoot signal is P1 arousal: <em>&ldquo;the more aroused the fly is the harder it tries to shoot&rdquo;</em>.", "pops": [["visual_left", "LC4", "sensory", 32.1], ["visual_right", "LPLC2", "sensory", 35.0], ["dn_turn", "DNa02", "motor", 0.0], ["dn_forward", "DNp09", "motor", 1.5], ["p1_command", "P1_a", "modulatory", 49.5], ["dan", "PPL101", "reward", 0.0]], "action": "{'turn': -0.76, 'forward': False, 'shoot': True}"}, {"id": "beatsaber", "name": "Beat Saber", "ask": "the fly playing Beat Saber", "repo": null, "repoName": "domi's demo (Bluesky/X video)", "status": "no public repo — rebuilt here", "stack": "rebuilt from the published mechanism", "idea": "Visual looming detectors decide <em>when to turn</em>. The <strong>courtship song</strong> circuit decides <em>when to swing</em> &mdash; P1/pC1 are male-specific command neurons for the mating song, and their activation level sets song vigour, mapped onto swing strength.", "why": "The cleverest of the four, and it rebuilds cleanly because P1&rarr;pIP10&rarr;wing-motor is one of the best-traced pathways in the male connectome. <strong>This circuit is male-specific, so this demo cannot be done on FlyWire at all</strong> &mdash; a genuine reason MaleCNS matters.", "poke": "Swing threshold is uncalibrated; wing motor sits at 0 Hz here because only pIP10 (24 neurons) feeds it.", "pops": [["visual_loom", "LC4, LPLC2", "sensory", 73.2], ["p1_command", "P1_a, pC1", "modulatory", 43.2], ["pip10", "pIP10", "motor", 18.8], ["wing_motor", "hg1, hg2, hg3", "motor", 0.0]], "action": "{'swing': False, 'strength': 0.31}"}];
+const DEMOS = [{"id": "doomscroll", "name": "Doomscrolling", "ask": "the fly doomscrolling", "repo": "https://github.com/ranagwho/Fruitfly-Doomscroller", "repoName": "FlyScroll", "status": "public repo", "stack": "Python · MaleCNS v1 (70k–166k cells)", "idea": "Visual activity plus mushroom-body activity gate the scroll decision, so the fly keeps scrolling while the current frame is still novel to it and stops once it habituates.", "why": "The most conceptually interesting of the four. The mushroom body is the fly's associative-learning centre and habituation there is real, well-characterised biology &mdash; so doomscrolling-as-habituation-failure is a genuine hypothesis, not a joke.", "poke": "Ablate the mushroom body output neurons and see whether it scrolls forever.", "pops": [["visual", "LC11, LC15", "sensory", 52.6], ["kenyon", "KCg-m, KCab-c", "sensory", 60.1], ["mbon", "MBON01, MBON11", "motor", 60.1], ["dan", "PPL101, PAM11", "reward", 0.0]], "action": "{'scroll': True, 'engagement': 60.1}"}, {"id": "stonks", "name": "Trading stocks", "ask": "the fly trading stocks", "repo": "https://github.com/nftechie/stonkfly", "repoName": "Stonkfly", "status": "public repo · 646 stars", "stack": "Python + C++17 kernel · MaleCNS v1.0", "idea": "Price charts go in as images to the visual system; the connectome's dopaminergic circuits are wired to P&amp;L.", "why": "Read this honestly: a fly brain has no market prior, so this is a randomly-initialised sparse recurrent net with a reward signal. Expect noise. Its value is as a <strong>plumbing test</strong> &mdash; if the reward wiring is right, the fly should at minimum learn to stop repeating trades that are immediately punished, and that finding transfers to Doom where reward actually matters.", "poke": "<strong>Paper only. Never point this at a live account.</strong>", "pops": [["visual", "LC11, LC15, LC4", "sensory", 32.4], ["mbon", "MBON01, MBON11", "motor", 30.0], ["dan_reward", "PAM11", "reward", 0.0], ["dan_punish", "PPL101", "reward", 0.0]], "action": "{'side': 'buy', 'confidence': 1.0, 'paper': True}"}, {"id": "doom", "name": "Doom", "ask": "the fly playing Doom on a keyboard", "repo": "https://github.com/eganeganegan/flydoom", "repoName": "FlyDoom", "status": "public repo", "stack": "PyTorch + ViZDoom · neuPrint male-cns:v1.0", "idea": "Each frame stimulates visual sensory neurons; descending neurons map to game controls; dopaminergic circuits supply reinforcement. ~6,000 playthroughs so far and it has not finished the game.", "why": "<strong>Start with FlyDoom, not Doomfly</strong> &mdash; it compares the connectome-constrained sparse controller against baselines. Without a baseline you cannot tell whether the fly's anatomy is doing anything or whether any sparse random net of that size performs identically.", "poke": "The shoot signal is P1 arousal: <em>&ldquo;the more aroused the fly is the harder it tries to shoot&rdquo;</em>.", "pops": [["visual_left", "LC4", "sensory", 32.1], ["visual_right", "LPLC2", "sensory", 35.0], ["dn_turn", "DNa02", "motor", 0.0], ["dn_forward", "DNp09", "motor", 1.5], ["p1_command", "P1_a", "modulatory", 49.5], ["dan", "PPL101", "reward", 0.0]], "action": "{'turn': -0.76, 'forward': False, 'shoot': True}"}, {"id": "beatsaber", "name": "Beat Saber", "ask": "the fly playing Beat Saber", "repo": null, "repoName": "domi's demo (Bluesky/X video)", "status": "no public repo — rebuilt here", "stack": "rebuilt from the published mechanism", "idea": "Visual looming detectors decide <em>when to turn</em>. The <strong>courtship song</strong> circuit decides <em>when to swing</em> &mdash; P1/pC1 are male-specific command neurons for the mating song, and their activation level sets song vigour, mapped onto swing strength.", "why": "The cleverest of the four, and it rebuilds cleanly because P1&rarr;pIP10&rarr;wing-motor is one of the best-traced pathways in the male connectome. <strong>This circuit is male-specific, so this demo cannot be done on FlyWire at all</strong> &mdash; a genuine reason MaleCNS matters.", "poke": "Swing threshold is uncalibrated; wing motor sits at 0 Hz here because only pIP10 (24 neurons) feeds it.", "pops": [["visual_loom", "LC4, LPLC2", "sensory", 73.2], ["p1_command", "P1_a, pC1", "modulatory", 43.2], ["pip10", "pIP10", "motor", 18.8], ["wing_motor", "hg1, hg2, hg3", "motor", 0.0]], "action": "{'swing': False, 'strength': 0.31}"}];
 let cur = 0;
 const MAXHZ = 80;
 
@@ -172,7 +276,7 @@ function renderTabs(){
     <button aria-pressed="${i===cur}" data-i="${i}">
       <span class="ask">${d.ask}</span><span>${d.name}</span></button>`).join("");
   document.querySelectorAll("#tabs button").forEach(b =>
-    b.addEventListener("click", () => { cur = +b.dataset.i; renderTabs(); renderDemo(); }));
+    b.addEventListener("click", () => { cur = +b.dataset.i; renderTabs(); renderDemo(); loadDemo(DEMOS[cur].id); renderArch(); }));
 }
 
 function renderDemo(){
@@ -194,7 +298,7 @@ function renderDemo(){
     </div>
     <div class="card">
       <div class="rates">
-        <div class="rl">Measured population rates &mdash; final frame</div>
+        <div class="rl">Rates from the Python harness &mdash; final frame of <code>harness.smoke</code></div>
         ${d.pops.map(([nm,ct,role,hz]) => `
           <div class="row role-${role}">
             <span><span class="nm">${nm}</span><br><span class="ct">${ct}</span></span>
@@ -213,5 +317,350 @@ function renderDemo(){
       statistics, so the pipeline is verified but the circuits are not real yet.</div>
     </div>`;
 }
-renderTabs(); renderDemo();
+
+/* =====================================================================================
+   Live LIF simulation — a port of harness/sim.py + harness/synthetic.py + the demos'
+   population specs. Same constants, same structure, JS RNG.
+   ===================================================================================== */
+const P = {tau_mem:0.020, tau_syn:0.005, v_reset:0, v_th:0.010, refractory:0.0022, dt:0.0001, w_syn:2.75e-4};
+const N = 4000, PER_TYPE = 24, MEAN_OUT = 40, INHIB = 0.35, PATHWAY_W = 0.0015;
+const CELL_TYPES = ["LC4","LC11","LC15","LPLC2","P1_a","pC1","pIP10","hg1","hg2","hg3","KCg-m","KCab-c","MBON01","MBON11","PPL101","PAM11","DNa02","DNp09"];
+const PATHWAYS = [[["LC11","LC15"],["KCg-m","KCab-c"]],[["KCg-m","KCab-c"],["MBON01","MBON11"]],[["LC4"],["DNa02"]],[["LPLC2"],["DNp09"]],[["P1_a","pC1"],["pIP10"]],[["pIP10"],["hg1","hg2","hg3"]]];
+
+// Demo population specs, verbatim from harness/demos/*.py (name, cell types, role, drive).
+const SPECS = {
+  doomscroll:{frame:1/30, pops:[["visual",["LC11","LC15"],"sensory",2.4],["kenyon",["KCg-m","KCab-c"],"sensory",0],["mbon",["MBON01","MBON11"],"motor",0],["dan",["PPL101","PAM11"],"reward",2.0]],
+    stim:[["visual","salience"],["dan","reward"]],
+    decode:r=>({engaged:r.mbon>8, scroll:r.mbon>8, engagement:+r.mbon.toFixed(1)})},
+  stonks:{frame:0.1, pops:[["visual",["LC11","LC15","LC4"],"sensory",2.4],["mbon",["MBON01","MBON11"],"motor",0],["dan_reward",["PAM11"],"reward",2.0],["dan_punish",["PPL101"],"reward",2.0]],
+    stim:[["visual","chart contrast"],["dan_reward","P&L reward"],["dan_punish","P&L punish"]],
+    decode:r=>({side:r.mbon>10?"buy":"hold", confidence:+Math.min(1,r.mbon/20).toFixed(2), paper:true})},
+  doom:{frame:1/35, pops:[["visual_left",["LC4"],"sensory",2.6],["visual_right",["LPLC2"],"sensory",2.6],["dn_turn",["DNa02"],"motor",0],["dn_forward",["DNp09"],"motor",0],["p1_command",["P1_a"],"modulatory",2.4],["dan",["PPL101"],"reward",2.0]],
+    stim:[["visual_left","enemy left"],["visual_right","enemy right"],["p1_command","arousal"],["dan","reward"]],
+    decode:r=>({turn:+((r.dn_turn-r.dn_forward)/60).toFixed(2), forward:r.dn_forward>15, shoot:r.p1_command>30})},
+  beatsaber:{frame:1/90, pops:[["visual_loom",["LC4","LPLC2"],"sensory",2.4],["p1_command",["P1_a","pC1"],"modulatory",2.4],["pip10",["pIP10"],"motor",0],["wing_motor",["hg1","hg2","hg3"],"motor",0]],
+    stim:[["visual_loom","loom"],["p1_command","arousal"]],
+    decode:r=>({swing:r.wing_motor>15, strength:+Math.min(1,r.pip10/60).toFixed(2)})},
+};
+
+// ---- synthetic connectome --------------------------------------------------------
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function buildConnectome(seed=0){
+  const rnd = mulberry32(seed);
+  const gauss = () => { let u=1-rnd(), v=rnd(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+  const cellType = new Array(N);
+  for (let i=0;i<N;i++) cellType[i] = "generic_"+(i%97);
+  CELL_TYPES.forEach((ct,k) => { for (let i=k*PER_TYPE;i<(k+1)*PER_TYPE;i++) cellType[i]=ct; });
+  const isDemo = cellType.map(c => CELL_TYPES.includes(c));
+  const inhib = new Uint8Array(N);
+  for (let i=0;i<N;i++) inhib[i] = (!isDemo[i] && rnd() < INHIB) ? 1 : 0;
+  // edge lists
+  const nnz = N*MEAN_OUT;
+  const rows = [], cols = [], vals = [];
+  for (let e=0;e<nnz;e++){
+    const i = Math.floor(rnd()*N), j = Math.floor(rnd()*N);
+    if (i===j) continue;                                   // setdiag(0)
+    const syn = Math.max(1, Math.exp(1.2 + 0.9*gauss()));   // log-normal synapse count
+    rows.push(i); cols.push(j); vals.push((inhib[i]?-1:1)*syn*P.w_syn);
+  }
+  const byType = {}; cellType.forEach((c,i) => { (byType[c] ||= []).push(i); });
+  for (const [pre,post] of PATHWAYS){
+    const a = pre.flatMap(c => byType[c]), b = post.flatMap(c => byType[c]);
+    for (const i of a) for (const j of b){ rows.push(i); cols.push(j); vals.push(PATHWAY_W); }
+  }
+  // CSR
+  const rowPtr = new Int32Array(N+1);
+  for (const i of rows) rowPtr[i+1]++;
+  for (let i=0;i<N;i++) rowPtr[i+1] += rowPtr[i];
+  const colIdx = new Int32Array(rows.length), val = new Float32Array(rows.length), fill = rowPtr.slice(0,N);
+  for (let e=0;e<rows.length;e++){ const k = fill[rows[e]]++; colIdx[k]=cols[e]; val[k]=vals[e]; }
+  return {cellType, byType, rowPtr, colIdx, val, nnz:rows.length};
+}
+
+// ---- LIF network ------------------------------------------------------------------
+class LIF {
+  constructor(c){ this.c=c; this.v=new Float32Array(N).fill(P.v_reset); this.isyn=new Float32Array(N); this.refUntil=new Float32Array(N).fill(-Infinity); this.t=0; this.dead=new Uint8Array(N);
+    this.dSyn=Math.exp(-P.dt/P.tau_syn); this.dMem=Math.exp(-P.dt/P.tau_mem); this.spikeCount=new Int32Array(N); }
+  reset(){ this.v.fill(P.v_reset); this.isyn.fill(0); this.refUntil.fill(-Infinity); this.t=0; }
+  step(ext){                                   // ext: Float32Array in threshold units, or null
+    const {v,isyn,refUntil,dead,c}=this, {rowPtr,colIdx,val}=c;
+    for (let i=0;i<N;i++) isyn[i]*=this.dSyn;
+    const spiked=[];
+    for (let i=0;i<N;i++){
+      if (this.t < refUntil[i] || dead[i]) continue;
+      const drive = isyn[i] + (ext ? ext[i]*P.v_th : 0);
+      v[i] = drive + (v[i]-drive)*this.dMem;
+      if (v[i] >= P.v_th){ v[i]=P.v_reset; refUntil[i]=this.t+P.refractory; spiked.push(i); }
+    }
+    for (const i of spiked){ for (let k=rowPtr[i];k<rowPtr[i+1];k++) isyn[colIdx[k]] += val[k]; }
+    this.t += P.dt;
+    return spiked;
+  }
+  advance(duration, ext){                      // returns per-neuron spike counts over the window
+    const n=Math.max(1,Math.round(duration/P.dt)); this.spikeCount.fill(0);
+    for (let s=0;s<n;s++){ const sp=this.step(ext); for (const i of sp) this.spikeCount[i]++; }
+    return n*P.dt;
+  }
+}
+
+// ---- state --------------------------------------------------------------------------
+const C = buildConnectome(0), net = new LIF(C);
+let spec=null, popIdx={}, stim={}, running=true, hist={}, actionNow={}, frames=0, simTime=0;
+const ROLE_COL = {sensory:"var(--sens)",motor:"var(--motor)",modulatory:"var(--mod)",reward:"var(--rew)"};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const roleHex = r => cssv(ROLE_COL[r].slice(4,-1));
+const HISTLEN = 240;
+
+function loadDemo(id){
+  spec = SPECS[id]; popIdx = {}; stim = {}; hist = {}; frames=0; simTime=0;
+  for (const [name,cts] of spec.pops){ popIdx[name] = cts.flatMap(c => C.byType[c]); hist[name]=new Float32Array(HISTLEN); }
+  for (const [name] of spec.stim) stim[name] = 0.8;
+  net.reset(); net.dead.fill(0);
+  renderCtrls(); renderKey(); buildCircuit(); clearCanvases(); loadEnv(id);
+}
+
+function externalCurrent(){
+  const ext = new Float32Array(N);
+  for (const [name,cts,role,drive] of spec.pops){ if (!drive) continue; const s = stim[name] ?? 0; for (const i of popIdx[name]) ext[i] = s*drive; }
+  return ext;
+}
+function frame(){
+  const window = net.advance(spec.frame, externalCurrent());
+  const rates = {};
+  for (const [name] of spec.pops){ const idx=popIdx[name]; let sp=0; for (const i of idx) sp+=net.spikeCount[i]; rates[name] = sp/(idx.length*window); }
+  for (const name in rates){ const h=hist[name]; h.copyWithin(0,1); h[HISTLEN-1]=rates[name]; }
+  actionNow = spec.decode(rates); frames++; simTime += window;
+  return rates;
+}
+
+// ---- circuit diagram ------------------------------------------------------------------
+let nodePos = {};
+function buildCircuit(){
+  const svg = document.getElementById("circuit");
+  // columns by role: sensory | interneuron(kenyon) + modulatory + reward | motor
+  const col = name => { const [,,role]=spec.pops.find(p=>p[0]===name); if (name==="kenyon") return 1; return {sensory:0,modulatory:1,reward:1,motor:2}[role]; };
+  const cols = [[],[],[]]; for (const [name] of spec.pops) cols[col(name)].push(name);
+  nodePos = {};
+  cols.forEach((names,ci) => names.forEach((name,ri) => { nodePos[name] = [90+ci*190, 150 + (ri-(names.length-1)/2)*80]; }));
+  // pathway edges between populations present in this demo
+  const typeOf = {}; for (const [name,cts] of spec.pops) for (const c of cts) typeOf[c]=name;
+  const edges = new Set();
+  for (const [pre,post] of PATHWAYS){ const a=new Set(pre.map(c=>typeOf[c]).filter(Boolean)), b=new Set(post.map(c=>typeOf[c]).filter(Boolean)); for (const x of a) for (const y of b) if (x!==y) edges.add(x+"→"+y); }
+  // reward/modulatory populations with no traced pathway: dotted "diffuse" edge to motor outputs
+  const weak = new Set();
+  for (const [name,,role] of spec.pops) if ((role==="reward"||role==="modulatory") && ![...edges].some(e=>e.startsWith(name+"→"))) for (const [m,,r2] of spec.pops) if (r2==="motor") weak.add(name+"→"+m);
+  const path = (a,b) => { const [x1,y1]=nodePos[a],[x2,y2]=nodePos[b]; const dx=x2-x1; return `M${x1+28} ${y1} C ${x1+28+dx*0.4} ${y1}, ${x2-28-dx*0.4} ${y2}, ${x2-30} ${y2}`; };
+  svg.innerHTML = `<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="context-stroke"/></marker></defs>`
+    + [...edges].map(e => { const [a,b]=e.split("→"); return `<path class="edge" d="${path(a,b)}"/>`; }).join("")
+    + [...weak].map(e => { const [a,b]=e.split("→"); return `<path class="edge weak" d="${path(a,b)}"/>`; }).join("")
+    + spec.pops.map(([name,cts,role]) => { const [x,y]=nodePos[name]; const r = 14 + 4*Math.sqrt(popIdx[name].length/24);
+        return `<g class="pop" data-p="${name}" style="cursor:pointer"><circle class="ring" cx="${x}" cy="${y}" r="${r}" stroke="${ROLE_COL[role]}"/>
+          <circle class="core" id="core-${name}" cx="${x}" cy="${y}" r="${r-1.5}" fill="${ROLE_COL[role]}" fill-opacity="0"/>
+          <text class="nh" id="hz-${name}" x="${x}" y="${y+4}">0</text>
+          <text class="nl" x="${x}" y="${y+r+14}">${name}</text><text class="nc" x="${x}" y="${y+r+25}">${cts.join(" ")} · ${popIdx[name].length}</text></g>`; }).join("");
+  svg.querySelectorAll(".pop").forEach(g => g.addEventListener("click", () => toggleAblate(g.dataset.p)));
+}
+function toggleAblate(name){
+  const idx = popIdx[name], now = net.dead[idx[0]] ? 0 : 1;
+  for (const i of idx) net.dead[i] = now;
+  document.querySelector(`.pop[data-p="${name}"]`).classList.toggle("dead", !!now);
+  document.querySelectorAll(`#abl button[data-p="${name}"]`).forEach(b => b.setAttribute("aria-pressed", String(!!now)));
+}
+function paintCircuit(rates){
+  for (const [name] of spec.pops){
+    const hz = rates[name]; document.getElementById("core-"+name).setAttribute("fill-opacity", (Math.min(1, hz/80)*0.9).toFixed(2));
+    document.getElementById("hz-"+name).textContent = hz.toFixed(0);
+  }
+}
+
+// ---- controls ---------------------------------------------------------------------------
+function renderCtrls(){
+  const el = document.getElementById("ctrls");
+  el.innerHTML = spec.stim.map(([name,label]) => { const [,cts,,drive]=spec.pops.find(p=>p[0]===name);
+    return `<div class="ctl"><label for="st-${name}"><b>${label}</b>${name} · ${cts.join(", ")} · drive ${drive}× threshold</label>
+      <output id="out-${name}">${stim[name].toFixed(2)}</output>
+      <input type="range" id="st-${name}" min="0" max="1" step="0.01" value="${stim[name]}"></div>`; }).join("")
+    + `<div class="pl">ablate</div><div class="abl" id="abl">` + spec.pops.map(([name,,role]) => `<button data-p="${name}" aria-pressed="false" style="--rc:${ROLE_COL[role]}"><i></i>${name}</button>`).join("") + `</div>`;
+  el.querySelectorAll("input[type=range]").forEach(r => r.addEventListener("input", () => { const n=r.id.slice(3); stim[n]=+r.value; document.getElementById("out-"+n).textContent=(+r.value).toFixed(2); }));
+  el.querySelectorAll("#abl button").forEach(b => b.addEventListener("click", () => toggleAblate(b.dataset.p)));
+}
+function renderKey(){
+  document.getElementById("rkey").innerHTML = spec.pops.map(([name,,role]) => `<i style="--rc:${ROLE_COL[role]}"><b></b>${name}</i>`).join("");
+}
+document.getElementById("runbtn").addEventListener("click", e => { running=!running; e.target.textContent = running ? "pause" : "run"; });
+document.getElementById("resetbtn").addEventListener("click", () => { net.reset(); net.dead.fill(0); for (const n in hist) hist[n].fill(0); document.querySelectorAll(".pop.dead").forEach(g=>g.classList.remove("dead")); document.querySelectorAll("#abl button").forEach(b=>b.setAttribute("aria-pressed","false")); clearCanvases(); frames=0; simTime=0; });
+
+// ---- raster + traces ---------------------------------------------------------------------
+const rc = document.getElementById("raster"), tc = document.getElementById("traces");
+function fit(cv){ const w = cv.clientWidth|0; if (cv.width !== w*2){ cv.width = w*2; if (cv.id==="world") cv.height = (cv.clientHeight|0)*2; } }
+function clearCanvases(){ for (const cv of [rc,tc]){ fit(cv); const g=cv.getContext("2d"); g.fillStyle=cssv("--sunken"); g.fillRect(0,0,cv.width,cv.height); } }
+function paintRaster(){
+  fit(rc); const g = rc.getContext("2d"), W=rc.width, H=rc.height;
+  const rowsList = spec.pops.flatMap(([name,,role]) => popIdx[name].map(i => [i, role]));
+  const rowH = H/rowsList.length;
+  const colW = Math.max(2, Math.round(W / (4/spec.frame)));   // 4 s across the canvas
+  g.drawImage(rc, -colW, 0);
+  g.fillStyle = cssv("--sunken"); g.fillRect(W-colW, 0, colW, H);
+  rowsList.forEach(([i,role],r) => { if (net.spikeCount[i]){ g.fillStyle = roleHex(role); g.globalAlpha = Math.min(1, 0.45+net.spikeCount[i]*0.25); g.fillRect(W-colW, r*rowH, colW, Math.max(1,rowH-0.5)); } });
+  g.globalAlpha = 1;
+}
+function paintTraces(){
+  fit(tc); const g = tc.getContext("2d"), W=tc.width, H=tc.height, pad=26;
+  g.fillStyle = cssv("--sunken"); g.fillRect(0,0,W,H);
+  const maxHz = Math.max(20, ...spec.pops.map(([n]) => Math.max(...hist[n])))*1.1;
+  g.strokeStyle = cssv("--rule"); g.lineWidth = 1; g.font = "18px "+cssv("--mono"); g.fillStyle = cssv("--ink-mute");
+  for (const hz of [0, Math.round(maxHz/2), Math.round(maxHz)]){ const y = H-4-(hz/maxHz)*(H-8); g.beginPath(); g.moveTo(pad+8,y); g.lineTo(W,y); g.stroke(); g.fillText(String(hz), 2, y+6); }
+  for (const [name,,role] of spec.pops){ const h=hist[name]; g.strokeStyle = roleHex(role); g.lineWidth=2.5; g.beginPath();
+    for (let k=0;k<HISTLEN;k++){ const x = pad+8 + (k/(HISTLEN-1))*(W-pad-10), y = H-4-(h[k]/maxHz)*(H-8); k?g.lineTo(x,y):g.moveTo(x,y); } g.stroke(); }
+}
+
+
+/* =====================================================================================
+   Task environments. Each one draws the world, derives the demo's observation from it
+   (when "auto-stimulus" is on, this overrides the sliders), and applies the fly's action.
+   The observations are the same quantities the upstream demos feed their encoders:
+   a salience for the feed, chart contrast for the ticker, left/right enemy signal for
+   Doom, loom for Beat Saber.
+   ===================================================================================== */
+const wc = document.getElementById("world"); let auto = true;
+document.getElementById("autob").addEventListener("click", e => { auto=!auto; e.target.setAttribute("aria-pressed", String(auto)); });
+const ENV_NOTES = {
+  doomscroll:"A feed of posts. Each post has a novelty (its brightness); the fly's visual → Kenyon-cell → MBON pathway reports it. As in FlyScroll, the fly watches while that signal is high and the feed advances once it has stayed low — habituation is what moves you on. Novelty decays while a post is on screen. Ablate the Kenyon cells and the novelty signal never forms, so the feed advances immediately: a fly that cannot be interested scrolls forever.",
+  stonks:"A random-walk price with occasional trends. Chart contrast (how much the last bars move) drives the visual population; the MBON rate sets buy vs hold. Paper only — P&L from the trades feeds the reward and punishment dopamine populations on the next frame, exactly as the harness does.",
+  doom:"Top-down arena. An enemy drifts around; its bearing splits into a left and a right looming signal (LC4 / LPLC2), the descending-neuron rates turn and advance the fly, and P1 arousal decides when it shoots. The upstream FlyDoom does the same through ViZDoom frames; this is the same loop on a canvas.",
+  beatsaber:"Tiles approach on a lane. Loom is how close the nearest tile is; the courtship command neurons (P1/pC1 → pIP10 → wing motor) set swing strength. A swing that lands while a tile is in the hit zone scores. This circuit is male-specific — the reason MaleCNS matters for this demo.",
+};
+const ENV = {
+  doomscroll:{ init(){ this.posts=[]; this.y=0; this.score=0; for(let i=0;i<6;i++) this.spawn(i*70); },
+    spawn(y){ this.posts.push({y, nov:0.35+Math.random()*0.65, seen:0}); },
+    observe(a){ const p=this.posts.find(q=>q.y>-10)||this.posts[0]; return {visual:p?Math.max(0,p.nov):0}; },
+    // Upstream semantics (FlyScroll): the fly WATCHES while the MBON novelty signal is
+    // high, and the feed advances once that signal has dropped — habituation moves you on.
+    step(a){ const top=this.posts.find(q=>q.y>-10); if(top){ top.seen+=1; top.nov*=0.992; }
+      this.low = a.scroll ? 0 : (this.low||0)+1;
+      const advance = this.low > 6 ? 2.6 : 0;                 // sustained low novelty → scroll
+      for(const p of this.posts) p.y-=advance;
+      this.posts=this.posts.filter(p=>p.y>-80); while(this.posts.length<8) this.spawn(Math.max(...this.posts.map(p=>p.y),0)+70); if(advance) this.score+=1; },
+    draw(g,W,H){ const cw=Math.min(W*0.42,520), x0=(W-cw)/2; g.fillStyle=cssv("--surface"); g.fillRect(x0,0,cw,H);
+      for(const p of this.posts){ const y=p.y*(H/300)*1.2; if(y<-60||y>H) continue; g.fillStyle=cssv("--rule-soft"); g.fillRect(x0+12,y+6,cw-24,54); g.fillStyle=cssv("--ink"); g.globalAlpha=0.15+0.85*p.nov; g.fillRect(x0+22,y+16,cw*0.55,10); g.fillRect(x0+22,y+34,cw*0.35,8); g.globalAlpha=1; }
+      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`posts scrolled: ${Math.floor(this.score/30)}`, x0+cw+16, 30); g.fillText(`top-post novelty ${((this.posts.find(q=>q.y>-10)||{nov:0}).nov).toFixed(2)}`, x0+cw+16, 58); } },
+  stonks:{ init(){ this.px=[]; let v=100; for(let i=0;i<120;i++){ v+=Math.random()*2-1; this.px.push(v);} this.pos=0; this.cash=0; this.trend=0; this.last=null; },
+    observe(){ const k=this.px.slice(-8); const c=(Math.max(...k)-Math.min(...k))/3; return {visual:Math.min(1,c), dan_reward:Math.max(0,this.last||0), dan_punish:Math.max(0,-(this.last||0))}; },
+    step(a){ if(Math.random()<0.02) this.trend=(Math.random()*2-1)*0.6; const nv=this.px[this.px.length-1]+this.trend+Math.random()*2-1; const d=nv-this.px[this.px.length-1]; this.px.push(nv); if(this.px.length>160) this.px.shift();
+      if(a.side==="buy"){ this.pos=1; } else this.pos=0; const pnl=this.pos*d; this.cash+=pnl; this.last=Math.max(-1,Math.min(1,pnl)); },
+    draw(g,W,H){ const n=this.px.length, lo=Math.min(...this.px), hi=Math.max(...this.px); const X=i=>20+i/(n-1)*(W-40), Y=v=>H-20-(v-lo)/(hi-lo+1e-9)*(H-40);
+      g.strokeStyle=cssv("--ink-soft"); g.lineWidth=2; g.beginPath(); this.px.forEach((v,i)=>i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v))); g.stroke();
+      g.fillStyle=this.pos?cssv("--ok"):cssv("--ink-mute"); g.beginPath(); g.arc(X(n-1),Y(this.px[n-1]),7,0,7); g.fill();
+      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`${this.pos?"LONG":"flat"}   paper P&L ${this.cash>=0?"+":""}${this.cash.toFixed(1)}`, 24, 30); } },
+  doom:{ init(){ this.fx=0;this.fy=0;this.fh=0;this.ex=140;this.ey=60;this.ea=Math.random()*7;this.shots=0;this.hits=0;this.flash=0; },
+    observe(){ const dx=this.ex-this.fx, dy=this.ey-this.fy; const bearing=Math.atan2(dy,dx)-this.fh; const b=Math.atan2(Math.sin(bearing),Math.cos(bearing)); const dist=Math.hypot(dx,dy); const near=Math.max(0,1-dist/320);
+      return {visual_left:Math.max(0,Math.sin(-b))*0.6+near*0.4, visual_right:Math.max(0,Math.sin(b))*0.6+near*0.4, p1_command:near, dan:this.flash>0?1:0}; },
+    step(a){ this.fh+=a.turn*0.12; if(a.forward){ this.fx+=Math.cos(this.fh)*2.2; this.fy+=Math.sin(this.fh)*2.2; } this.ea+=0.03; this.ex=150*Math.cos(this.ea*0.7); this.ey=90*Math.sin(this.ea);
+      this.flash=Math.max(0,this.flash-1); if(a.shoot && Math.random()<0.08){ this.shots++; const dx=this.ex-this.fx,dy=this.ey-this.fy; const b=Math.atan2(dy,dx)-this.fh; if(Math.abs(Math.atan2(Math.sin(b),Math.cos(b)))<0.25){ this.hits++; this.flash=20; } }
+      this.fx=Math.max(-220,Math.min(220,this.fx)); this.fy=Math.max(-120,Math.min(120,this.fy)); },
+    draw(g,W,H){ const cx=W/2, cy=H/2, k=Math.min(W/520,H/300); const P=(x,y)=>[cx+x*k,cy+y*k];
+      g.strokeStyle=cssv("--rule"); g.strokeRect(cx-230*k,cy-130*k,460*k,260*k);
+      let [ex,ey]=P(this.ex,this.ey); g.fillStyle=this.flash?cssv("--warn"):cssv("--crit"); g.beginPath(); g.arc(ex,ey,10*k,0,7); g.fill();
+      let [fx,fy]=P(this.fx,this.fy); g.fillStyle=cssv("--accent"); g.beginPath(); g.moveTo(fx+Math.cos(this.fh)*16*k,fy+Math.sin(this.fh)*16*k); g.lineTo(fx+Math.cos(this.fh+2.5)*11*k,fy+Math.sin(this.fh+2.5)*11*k); g.lineTo(fx+Math.cos(this.fh-2.5)*11*k,fy+Math.sin(this.fh-2.5)*11*k); g.closePath(); g.fill();
+      g.strokeStyle=cssv("--ink-mute"); g.setLineDash([4,6]); g.beginPath(); g.moveTo(fx,fy); g.lineTo(fx+Math.cos(this.fh)*80*k,fy+Math.sin(this.fh)*80*k); g.stroke(); g.setLineDash([]);
+      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`shots ${this.shots}  hits ${this.hits}`, 24, 30); } },
+  beatsaber:{ init(){ this.tiles=[]; this.t=0; this.hits=0; this.miss=0; this.swing=0; },
+    observe(){ const n=this.tiles.filter(t=>t.z>0).sort((a,b)=>a.z-b.z)[0]; const loom=n?Math.max(0,1-n.z/400):0; return {visual_loom:loom, p1_command:0.6+0.4*loom}; },
+    step(a){ this.t++; if(this.t%70===0) this.tiles.push({z:400,lane:Math.random()<0.5?0:1,hit:false}); for(const t of this.tiles) t.z-=3.2; this.swing=Math.max(0,this.swing-1);
+      if(a.swing && this.swing===0){ this.swing=12; for(const t of this.tiles) if(!t.hit && t.z>0 && t.z<50){ t.hit=true; this.hits++; } }
+      for(const t of this.tiles) if(!t.hit && t.z<-5 && !t.counted){ t.counted=true; this.miss++; } this.tiles=this.tiles.filter(t=>t.z>-40); },
+    draw(g,W,H){ const cx=W/2, hz=H*0.82; g.strokeStyle=cssv("--rule"); g.beginPath(); g.moveTo(cx-40,H*0.15); g.lineTo(cx-W*0.3,hz); g.moveTo(cx+40,H*0.15); g.lineTo(cx+W*0.3,hz); g.stroke();
+      g.strokeStyle=cssv("--accent"); g.setLineDash([6,6]); g.beginPath(); g.moveTo(cx-W*0.3,hz-10); g.lineTo(cx+W*0.3,hz-10); g.stroke(); g.setLineDash([]);
+      for(const t of this.tiles.slice().sort((a,b)=>b.z-a.z)){ const d=Math.max(0.02,t.z/400); const s=1-d; const y=H*0.15+(hz-H*0.15)*s; const w=(40+W*0.26*s); const x=cx+(t.lane?1:-1)*w*0.5; const sz=6+26*s; g.fillStyle=t.hit?cssv("--ok"):cssv("--mod"); g.globalAlpha=t.hit?0.4:0.9; g.fillRect(x-sz/2,y-sz/2,sz,sz); g.globalAlpha=1; }
+      if(this.swing){ g.strokeStyle=cssv("--warn"); g.lineWidth=5; g.beginPath(); g.moveTo(cx-W*0.28,hz+10); g.lineTo(cx+W*0.28,hz-30-this.swing*3); g.stroke(); g.lineWidth=1; }
+      g.font="20px "+cssv("--mono"); g.fillStyle=cssv("--ink-mute"); g.fillText(`hits ${this.hits}  missed ${this.miss}`, 24, 30); } },
+};
+let env=null;
+function loadEnv(id){ env=ENV[id]; env.init(); document.getElementById("envnote").textContent=ENV_NOTES[id]; }
+function envTick(){
+  if(!env) return; fit(wc); const g=wc.getContext("2d"); g.fillStyle=cssv("--sunken"); g.fillRect(0,0,wc.width,wc.height);
+  if(auto){ const o=env.observe(actionNow); for(const k in o) if(k in stim){ stim[k]=Math.max(0,Math.min(1,o[k])); const r=document.getElementById("st-"+k); if(r){ r.value=stim[k]; document.getElementById("out-"+k).textContent=stim[k].toFixed(2);} } }
+  env.step(actionNow); env.draw(g,wc.width,wc.height);
+}
+
+
+/* ---- architecture diagrams, from the upstream repos (read 2026-09-14) ------------- */
+const ARCH = {
+  doomscroll:{title:"FlyScroll", repo:"ranagwho/Fruitfly-Doomscroller", url:"https://github.com/ranagwho/Fruitfly-Doomscroller",
+    fact:"What is distinctive: habituation is not a scalar. Sustained Kenyon-cell activity depresses the KC → novelty-MBON synapses with slow homeostasis, so a post stops being interesting because the synapse that reports it tires — and the feed advances when that novelty signal has been low for long enough. It explicitly does not inject a frame-difference current into Kenyon cells; the retina does the work.",
+    stages:[
+      {t:"Source", m:"feed.py · shorts.py · screencapture.py", n:"reels/ MP4s, procedural brainrot, or live YouTube Shorts: Playwright opens Chromium, ScreenCaptureKit streams the window"},
+      {t:"Retina", m:"retina.py · flyvision.py", n:"frames → coarse ommatidial columns, normalised → mapped R1–R8 photoreceptors"},
+      {t:"Brain", m:"connectome.py · engine.py · anatomy.py", n:"MaleCNS v1 Feather tables; --scale visual ≈70k cells (16 GB laptop) or full 166k", brain:true},
+      {t:"Readout", m:"interest.py · populations.py", n:"novelty = prediction error across analog channels; interest = its slow tonic component; KC→MBON depression + homeostasis"},
+      {t:"Act", m:"session.py · server.py", n:"advance the feed after sustained novelty drop; spectator web UI with the neon wiring plate"}],
+    fb:null},
+  stonks:{title:"Stonkfly", repo:"nftechie/stonkfly", url:"https://github.com/nftechie/stonkfly",
+    fact:"What is distinctive: the market enters through the eye, not a feature vector — prices are rendered as an RGB candlestick and drive 3,335 brightness inputs and 811 R8 colour inputs. Reward is anatomically specific: positive P&L stimulates 15 identified PAM11 dopamine cells, negative P&L two PPL101 aversive cells. Paper trading by default with $100; live trading is opt-in behind a $10 order cap, 24 attempts/day and a $20 drawdown stop. Profitable learning has not been demonstrated, and the README says so.",
+    stages:[
+      {t:"Market", m:"market.py · data.py", n:"public Coinbase BTC-USDC prices; no key needed for paper mode"},
+      {t:"Retina", m:"display.py · neural/visual.py · neural/sensory.py", n:"RGB candlestick image → 3,335 brightness + 811 R8 colour inputs"},
+      {t:"Brain", m:"neural/kernel.cpp · brain.py · circuit.py · state.py", n:"retained MaleCNS v1.0 graph on a C++17 kernel; resumable brain state", brain:true},
+      {t:"Readout", m:"neural/controller.py · actions.py", n:"motor-side activity → buy / sell / hold with confidence"},
+      {t:"Act", m:"broker.py · risk.py · ledger.py", n:"paper $100 default; guarded Coinbase Advanced live mode"}],
+    fb:{from:4,to:2,label:"P&L → 15 PAM11 (+) / 2 PPL101 (−)  ·  neural/rule.py · reinforcement.py"}},
+  doom:{title:"FlyDoom", repo:"eganeganegan/flydoom", url:"https://github.com/eganeganegan/flydoom",
+    fact:"What is distinctive: it is a controlled experiment, not a demo. The question is whether the connectome's topology is a useful inductive bias, so the same sparse leaky recurrence is trained with PPO (or a gradient-free three-factor rule: eligibility traces, dopamine prediction error, homeostasis, optional KC→MBON-only plasticity) against matched controls — Erdős–Rényi, degree-preserving rewiring, MLP, GRU, LSTM. No dense N×N adjacency, no MLP bypass. ~6,000 playthroughs so far and it has not finished the game.",
+    stages:[
+      {t:"Data", m:"data/male_cns.py · subgraph.py · loaders.py", n:"neuPrint male-cns:v1.0 or bulk Feather; type / class / k-hop / shortest-path-union subgraphs → CSR"},
+      {t:"Env + retina", m:"env/doom_env.py · observations.py · actions.py", n:"ViZDoom scenarios; four actions + no-op + shoot; CNN or fly-inspired visual encoder"},
+      {t:"Brain", m:"models/connectome_network.py · spiking_network.py · rate_network.py", n:"sparse leaky recurrence over the subgraph; fixed, trainable, or readout-only weights; optional NT sign constraints", brain:true},
+      {t:"Readout", m:"models/readout.py · graph_policy.py", n:"descending / motor populations → action logits"},
+      {t:"Learn + compare", m:"training/ppo.py · experiments/baselines.py · ablations.py", n:"PPO or three-factor local learning; rewired-graph and RNN controls; PyVista player for traces"}],
+    fb:{from:4,to:2,label:"reward → dopamine prediction error  ·  env/rewards.py"}},
+  beatsaber:{title:"Beat Saber (domi)", repo:"no public repo — video only", url:null,
+    fact:"What is distinctive: the swing is a courtship song. P1/pC1 are male-specific command neurons whose activation level sets song vigour; domi mapped that vigour onto swing strength, and looming detectors onto when to turn. Because P1 → pIP10 → wing motor is one of the best-traced pathways in the male connectome, it rebuilds cleanly — and because it is male-specific, it cannot be done on FlyWire, which is female. That is the concrete reason MaleCNS matters here.",
+    stages:[
+      {t:"Game", m:"(published mechanism)", n:"tiles approach on a lane"},
+      {t:"Retina", m:"(published mechanism)", n:"looming → LC4 / LPLC2"},
+      {t:"Brain", m:"MaleCNS", n:"P1 / pC1 courtship command → pIP10 descending → hg1–3 wing motor", brain:true},
+      {t:"Readout", m:"(published mechanism)", n:"LC → when to turn; P1 vigour → swing strength"},
+      {t:"Act", m:"—", n:"swing"}],
+    fb:null},
+};
+const HARNESS = {title:"This harness (all four)", repo:"02-flywire-connectome/harness", url:"https://github.com/Reishuen/hardware-playground",
+  fact:"Same shape, one brain. A demo is a PopulationSpec list plus encode() and decode(); the LIF over the connectome graph is shared and is the only expensive part. That is what makes 'does the same fly behave consistently across tasks?' an askable question — you diff the population sets.",
+  stages:[
+    {t:"Observation", m:"demos/*.py · encode()", n:"task state → external current on named populations, in threshold units"},
+    {t:"Brain", m:"sim.py · LIFNetwork · Connectome", n:"current-based LIF, Shiu et al. constants; synthetic.py stands in for MaleCNS", brain:true},
+    {t:"Readout", m:"demos/*.py · decode()", n:"population rates over one frame → action"},
+    {t:"Act", m:"core.py · Demo.step()", n:"action + raster + rates; reward() into dopaminergic populations next frame"}],
+  fb:{from:3,to:1,label:"reward → DAN drive (PPL101 / PAM11)"}};
+
+function drawArch(a){
+  const n=a.stages.length, W=960, bw=Math.floor((W-40-(n-1)*34)/n), bh=118, y=20;
+  const x=i=>20+i*(bw+34);
+  const wrap=(t,max)=>{ const w=[]; let l=""; for(const wd of t.split(" ")){ if((l+" "+wd).trim().length>max){ w.push(l.trim()); l=wd; } else l+=" "+wd; } if(l.trim()) w.push(l.trim()); return w.slice(0,6); };
+  let g=`<defs><marker id="darr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="context-stroke"/></marker></defs>`;
+  a.stages.forEach((st,i)=>{ const X=x(i); g+=`<rect class="bx ${st.brain?"brain":""}" x="${X}" y="${y}" width="${bw}" height="${bh}" rx="2"/>
+    <text class="tt" x="${X+9}" y="${y+17}">${st.t}</text>`;
+    const ml=wrap(st.m, Math.floor(bw/5.6)).slice(0,2); ml.forEach((l,k)=> g+=`<text class="md" x="${X+9}" y="${y+31+k*11}">${l}</text>`);
+    wrap(st.n, Math.floor(bw/5.3)).forEach((l,k)=> g+=`<text class="nt" x="${X+9}" y="${y+33+ml.length*11+k*12}">${l}</text>`);
+    if(i<n-1) g+=`<path class="ar" d="M${X+bw+2} ${y+bh/2} L${X+bw+30} ${y+bh/2}"/>`; });
+  if(a.fb){ const fx=x(a.fb.from)+bw/2, tx=x(a.fb.to)+bw/2, yy=y+bh+26; g+=`<path class="ar fb" d="M${fx} ${y+bh+2} L${fx} ${yy} L${tx} ${yy} L${tx} ${y+bh+4}"/><text class="al" x="${(fx+tx)/2}" y="${yy+13}" text-anchor="middle">${a.fb.label}</text>`; }
+  const H = a.fb ? y+bh+50 : y+bh+14;
+  return `<div class="diag"><div class="dt"><b>${a.title}</b><span>${a.repo}</span>${a.url?`<a href="${a.url}">${a.url.replace("https://","")}</a>`:""}</div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pipeline diagram for ${a.title}">${g}</svg><p class="fact">${a.fact}</p></div>`;
+}
+function renderArch(){ document.getElementById("archs").innerHTML = drawArch(ARCH[DEMOS[cur].id]) + drawArch(HARNESS); }
+
+// ---- loop --------------------------------------------------------------------------------
+let lastPaint = 0;
+function tick(now){
+  if (running){
+    const rates = frame(); paintCircuit(rates); paintRaster(); envTick();
+    if (now - lastPaint > 90){ paintTraces(); lastPaint = now;
+      document.getElementById("act2").textContent = JSON.stringify(actionNow);
+      document.getElementById("lstat").textContent = `${(simTime).toFixed(1)} s of brain time · frame ${frames} · ${N.toLocaleString()} neurons · ${C.nnz.toLocaleString()} synaptic edges · dt 0.1 ms`; }
+  }
+  requestAnimationFrame(tick);
+}
+
+renderTabs(); renderDemo(); loadDemo(DEMOS[cur].id); renderArch(); requestAnimationFrame(tick);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", clearCanvases);
 </script>
