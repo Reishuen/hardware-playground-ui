@@ -429,6 +429,9 @@ h1{font-size:clamp(20px,2.6vw,27px)}
 .vcbar{margin:12px 0 0}
 
 /* ---- Node popouts ------------------------------------------------------ */
+/* `display:grid` below outranks the UA's `[hidden]{display:none}`, so the attribute
+   has to be honoured explicitly or the close button appears to do nothing. */
+.nodepop[hidden]{display:none}
 .nodepop{position:absolute;z-index:6;width:min(310px,80vw);
   background:var(--surface);border:1px solid var(--rule);border-radius:3px;
   border-top:3px solid var(--pc,var(--spine));
@@ -473,25 +476,22 @@ h1{font-size:clamp(20px,2.6vw,27px)}
     <textarea id="seedin" rows="1" spellcheck="false"
       aria-label="a topic to abstract and trace"></textarea>
     <div class="conghost" id="seedghost" aria-hidden="true">
-      <b>Give it a topic.</b> A mechanism, a method or a limit — and a test that could
-      come out false. Try “critical slowing down near a bifurcation”.
+      <b>Name a topic.</b> A mechanism, a method, or a limit — something with a test
+      that could come out false.
     </div>
   </div>
   <div class="conrow">
     <div class="conopts">
-      <label>form on
-        <select id="seedaxis">
-          <option value="structure">structure — what the systems are</option>
-          <option value="practice">practice — what the people do</option>
-        </select></label>
       <label>model
         <select id="seedprov">
           <option value="muse">Muse Spark 1.3</option>
           <option value="openai">GPT-5.6 Luna</option>
           <option value="gemini">Gemini 3.8 Flash</option>
         </select></label>
-      <label>fields
-        <select id="seedn"><option>3</option><option selected>4</option><option>5</option></select></label>
+      <label>how many adjacent fields to pull in
+        <select id="seedn">
+          <option>3</option><option selected>4</option><option>5</option>
+        </select></label>
     </div>
     <button id="seedgo" class="congo">form the analogy</button>
   </div>
@@ -1879,14 +1879,17 @@ seedIn.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); runSeed(); }
 });
 
-function seedCommand(topic, axis, prov, n){
+function seedCommand(topic, prov, n){
   const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
     .slice(0, 28) || "seed";
-  const tag = axis === "practice" ? `-practice-${prov}` : `-${prov}`;
-  return `python harness/elicit.py --axis ${axis} --provider ${prov} --domains ${n} \\\n`
-    + `  --topic ${JSON.stringify(topic)} --out corpus/${slug}${tag}.json\n`
-    + `python harness/value_chain.py --corpus corpus/${slug}${tag}.json --provider ${prov}\n`
-    + `python harness/formation.py --corpus corpus/${slug}${tag}.json --provider ${prov}\n`
+  const t = JSON.stringify(topic);
+  return `python harness/elicit.py --axis structure --provider ${prov} --domains ${n} \\\n`
+    + `  --topic ${t} --out corpus/${slug}-${prov}.json\n`
+    + `python harness/elicit.py --axis practice --provider ${prov} --domains ${n} \\\n`
+    + `  --topic ${t} --out corpus/${slug}-practice-${prov}.json\n`
+    + `python harness/merge.py --seed ${slug} --provider ${prov}\n`
+    + `python harness/value_chain.py --corpus corpus/${slug}-both-${prov}.json --provider ${prov}\n`
+    + `python harness/formation.py --corpus corpus/${slug}-both-${prov}.json --provider ${prov}\n`
     + `python harness/build_ui.py`;
 }
 
@@ -1897,7 +1900,6 @@ async function runSeed(){
       + "practice is.", "err");
     return;
   }
-  const axis = document.getElementById("seedaxis").value;
   const prov = document.getElementById("seedprov").value;
   const n = document.getElementById("seedn").value;
 
@@ -1905,16 +1907,16 @@ async function runSeed(){
     conSay(`This copy is a static page, so it cannot run the passes itself. Serve it
       with <code>python harness/serve.py</code> and the box runs them for real — or
       run this:`, "");
-    conAdd(`<code>${seedCommand(topic, axis, prov, n)}</code>`);
+    conAdd(`<code>${seedCommand(topic, prov, n)}</code>`);
     return;
   }
 
   seedGo.disabled = true;
-  conSay(`pass 1/3 · abstracting the ${axis} of “${topic}” …`);
+  conSay(`forming “${topic}” on both axes — this takes a few minutes …`);
   try {
     const res = await fetch("api/run", {
       method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({topic, axis, provider: prov, domains: +n})
+      body: JSON.stringify({topic, provider: prov, domains: +n})
     });
     const job = await res.json();
     if (job.error){ conSay(job.error, "err"); seedGo.disabled = false; return; }
