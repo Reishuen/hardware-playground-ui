@@ -2211,22 +2211,23 @@ setBlank(true);
    served by harness/serve.py — the published copy is a static file and cannot
    run anything. Rather than hide the box on the static host, it degrades to
    handing you the exact command, which is the honest version of the feature. */
-/* A different example each load. They are deliberately terse and in the vocabulary
-   of the field — "domain: the thing you want" — because the grey line has one job,
-   which is to show how specific to be, and a vague example teaches vagueness. */
+/* A different example each load, in the words somebody would actually use about
+   their own problem. The line's job is to show how specific to be, and a person
+   describing a goal out loud is more copyable than a spec line — the passes read
+   plain language perfectly well. */
 const EGS = [
-  "photolithography: line-edge roughness under 2 nm",
-  "Li-ion: arrest SEI growth at 4C",
-  "cryo-EM: kill preferred orientation",
-  "Ni catalysis: stop coke fouling",
-  "LPBF: no keyhole porosity in Ti-6Al-4V",
-  "LNPs: endosomal escape past 5%",
-  "CMOS: cut 1/f noise at low current",
-  "anaerobic digestion: hold VFA below inhibition",
-  "Zn anodes: flatten dendrite nucleation",
-  "sub-salt seismic: resolve under the overburden",
-  "perovskite PV: halt ion migration at 85 °C",
-  "divertor: heat flux below 10 MW/m²",
+  "my battery cells die too fast when charged quickly",
+  "our catalyst keeps fouling and we have to shut down",
+  "we can't see anything under the salt layer",
+  "my protein samples all line up the same way",
+  "our printed titanium parts keep coming out porous",
+  "the drug gets into the cell but never out of the endosome",
+  "our solar cells drift once they get hot",
+  "the zinc anodes grow spikes and short out",
+  "the digester goes sour whenever we feed it more",
+  "the amplifier hisses at low frequencies",
+  "all the heat lands on one strip of the wall",
+  "our wells silt up faster than we can clean them",
 ];
 const egEl = document.getElementById("seedeg");
 if (egEl) egEl.textContent = "“" + EGS[Math.floor(Math.random() * EGS.length)] + "”";
