@@ -300,7 +300,8 @@ button.chip:hover{color:var(--ink);border-color:var(--ink-mute)}
 .skip b{color:var(--ink-soft);font-weight:600}
 .term{background:var(--surface-2);border:1px solid var(--rule);border-radius:var(--r-lg);
   padding:17px 19px;display:grid;gap:9px;align-content:start}
-.term h4{margin:0;font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.25}
+.term h4{margin:0;font-family:var(--serif);font-size:17px;font-weight:600;
+  line-height:1.25;color:var(--accent)}
 .term .row{display:grid;gap:1px}
 .term .row .k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-mute)}
@@ -336,8 +337,8 @@ button.chip:hover{color:var(--ink);border-color:var(--ink-mute)}
   padding-bottom:7px;border-bottom:1px solid var(--rule);align-items:end}
 .prhead .h{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-mute)}
-.prhead .f{font-family:var(--serif);font-size:15.5px;font-weight:600;color:var(--ink);
-  line-height:1.2}
+.prhead .f{font-family:var(--serif);font-size:15.5px;font-weight:600;
+  color:var(--accent);line-height:1.2}
 .prhead .mid{text-align:center}
 .prgroup{margin-top:19px;display:grid;gap:9px}
 .grouplabel{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
@@ -486,11 +487,13 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
 }
 
 /* ---- Brand, theme switch, and the console as the main element ---------- */
-.masthead{gap:6px;padding-bottom:14px}
+.masthead{gap:6px;padding-bottom:6px}
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:38px;height:38px;flex:none;color:var(--accent)}
+/* Terracotta carries the display type in both skins: on sand it is the text, on
+   near-black it is the accent against warm off-white body copy. */
 h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);
-  letter-spacing:-.015em;line-height:1.05;margin:0;color:var(--ink)}
+  letter-spacing:-.015em;line-height:1.05;margin:0;color:var(--accent)}
 .themes{margin-left:auto;display:inline-flex;gap:2px;padding:3px;
   background:var(--surface-2);border:1px solid var(--rule);border-radius:999px}
 .themes button{width:30px;height:26px;display:grid;place-items:center;cursor:pointer;
@@ -578,7 +581,6 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);
         stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
     </div>
   </div>
-  <div class="eyebrow" id="eyebrow"></div>
 </header>
 
 <!-- The console. A seed goes in here and a graph comes out; everything else on the
@@ -788,13 +790,9 @@ function renderModelbar(){
 }
 
 function renderHead(){
-  const c = CORPORA[ci];
-  const fields = D.domains.length - 1;
-  document.getElementById("eyebrow").innerHTML =
-    `showing <strong>${esc(c.short)}</strong>`
-    + ` · ${(c.domain || "").replace(/_/g, " ")}`
-    + ` · formed on ${c.axis} · ${fields} fields · ${D.nodes.length} nodes`;
-  document.getElementById("standfirst").innerHTML = c.blurb;
+  // The header names the tool and nothing else. Which seed is on show is already
+  // said by the pressed button in the history drawer and by the graph itself.
+  document.getElementById("standfirst").innerHTML = CORPORA[ci].blurb;
 }
 
 function renderSeedbar(){
