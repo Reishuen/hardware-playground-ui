@@ -420,7 +420,6 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
   color:var(--ink-mute);transition:opacity .25s ease;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .conghost b{font-weight:600;color:var(--ink-soft)}
-.conghost i{font-style:italic;color:var(--ink-mute)}
 .console.typing .conghost{opacity:0}
 .conrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
   border-top:1px solid var(--rule-soft);padding-top:10px}
@@ -709,7 +708,7 @@ body.blank .console{margin-bottom:0}
     <textarea id="seedin" rows="1" spellcheck="false"
       aria-label="a topic to abstract and trace"></textarea>
     <div class="conghost" id="seedghost" aria-hidden="true">
-      Name your domain and your goal in it — e.g. <i id="seedeg"></i>
+      Name your domain and your goal in it
     </div>
   </div>
   <div class="conrow">
@@ -2211,27 +2210,6 @@ setBlank(true);
    served by harness/serve.py — the published copy is a static file and cannot
    run anything. Rather than hide the box on the static host, it degrades to
    handing you the exact command, which is the honest version of the feature. */
-/* A different example each load, in the words somebody would actually use about
-   their own problem. The line's job is to show how specific to be, and a person
-   describing a goal out loud is more copyable than a spec line — the passes read
-   plain language perfectly well. */
-const EGS = [
-  "my battery cells die too fast when charged quickly",
-  "our catalyst keeps fouling and we have to shut down",
-  "we can't see anything under the salt layer",
-  "my protein samples all line up the same way",
-  "our printed titanium parts keep coming out porous",
-  "the drug gets into the cell but never out of the endosome",
-  "our solar cells drift once they get hot",
-  "the zinc anodes grow spikes and short out",
-  "the digester goes sour whenever we feed it more",
-  "the amplifier hisses at low frequencies",
-  "all the heat lands on one strip of the wall",
-  "our wells silt up faster than we can clean them",
-];
-const egEl = document.getElementById("seedeg");
-if (egEl) egEl.textContent = "“" + EGS[Math.floor(Math.random() * EGS.length)] + "”";
-
 const conEl = document.getElementById("console");
 const seedIn = document.getElementById("seedin");
 const seedGo = document.getElementById("seedgo");
