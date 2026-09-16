@@ -490,17 +490,22 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
 .masthead{gap:6px;padding-bottom:6px}
 .brand{display:grid;grid-template-columns:auto minmax(0,1fr) auto;
   align-items:center;column-gap:13px;row-gap:3px}
-.brand .logo{grid-column:1;grid-row:1/3;align-self:center}
+/* The mark spans both rows, so it stands as tall as the title and the line under
+   it together rather than floating beside the title alone. */
+.brand .logo{grid-column:1;grid-row:1/3;align-self:stretch;height:100%;
+  width:auto;aspect-ratio:1;min-height:52px}
 .brand h1{grid-column:2;grid-row:1}
 .brand .tagline{grid-column:2;grid-row:2}
 .brand .themes{grid-column:3;grid-row:1/3;align-self:center;margin-left:0}
-.tagline{margin:0;font-family:var(--serif);font-size:clamp(13px,1.5vw,15.5px);
-  line-height:1.35;color:var(--ink-soft);max-width:62ch}
+.tagline{margin:0;font-family:var(--serif);font-size:clamp(12px,1.35vw,15px);
+  line-height:1.35;color:var(--ink-soft);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+@media (max-width:880px){.tagline{white-space:normal}}
 @media (max-width:600px){
   .brand{grid-template-columns:auto minmax(0,1fr)}
   .brand .themes{grid-column:1/3;grid-row:3;justify-self:start;margin-top:8px}
 }
-.logo{width:38px;height:38px;flex:none;color:var(--accent)}
+.logo{flex:none;color:var(--accent)}
 /* Terracotta carries the display type in both skins: on sand it is the text, on
    near-black it is the accent against warm off-white body copy. */
 h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);
@@ -540,7 +545,10 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);
   background:var(--surface-2);border:1px solid var(--rule);border-radius:999px;
   padding:6px 12px;color:var(--ink)}
 .concode:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.concode+.consend{margin-left:8px}
+/* Only when the code field is actually shown — a hidden sibling still matches `+`,
+   which was stealing the send button's auto margin and parking it mid-row. */
+.concode:not([hidden])+.consend{margin-left:8px}
+.concode[hidden]{display:none}
 .consend{margin-left:auto;width:36px;height:36px;flex:none;display:grid;
   place-items:center;cursor:pointer;border-radius:999px;border:1px solid var(--rule);
   background:var(--surface-2);color:var(--ink-soft);padding:0}
@@ -610,16 +618,29 @@ body.blank .console{margin-bottom:0}
 <div class="wrap">
 <header class="masthead">
   <div class="brand">
-    <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
-      <!-- A constellation: sparse points, a few joined. The graph in miniature. -->
-      <path d="M8 27 L15 12 L26 17 L33 9 M15 12 L21 28 M26 17 L21 28"
-        fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"
-        opacity=".55"/>
-      <circle cx="15" cy="12" r="3.4" fill="currentColor"/>
-      <circle cx="26" cy="17" r="2.6" fill="currentColor"/>
-      <circle cx="21" cy="28" r="2.2" fill="currentColor"/>
-      <circle cx="8" cy="27" r="1.8" fill="currentColor" opacity=".75"/>
-      <circle cx="33" cy="9" r="1.6" fill="currentColor" opacity=".6"/>
+    <svg class="logo" viewBox="0 0 44 44" aria-hidden="true">
+      <!-- A telescope pointed at a constellation: the tool, and what it is for. -->
+      <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <!-- tripod -->
+        <path d="M14 29.5 L14 33" stroke-width="1.6"/>
+        <path d="M14 33 L9.5 38.5 M14 33 L18.5 38.5 M14 33 L14 38.5"
+          stroke-width="1.6"/>
+        <!-- tube, pointed up and to the right -->
+        <path d="M8.5 30.5 L20.5 20" stroke-width="4.4" opacity=".95"/>
+        <!-- eyepiece and objective rims -->
+        <path d="M6.6 28.8 L10.2 32.2" stroke-width="1.8"/>
+        <path d="M18.6 18.3 L22.4 21.7" stroke-width="1.8"/>
+      </g>
+      <!-- the constellation it is looking at -->
+      <g fill="none" stroke="currentColor" stroke-width="1.1" opacity=".5">
+        <path d="M26.5 12.5 L34 8 M26.5 12.5 L31 19 M34 8 L37.5 14"/>
+      </g>
+      <g fill="currentColor">
+        <circle cx="26.5" cy="12.5" r="2.7"/>
+        <circle cx="34" cy="8" r="2"/>
+        <circle cx="31" cy="19" r="1.6" opacity=".8"/>
+        <circle cx="37.5" cy="14" r="1.4" opacity=".65"/>
+      </g>
     </svg>
     <h1>Analogy &amp; Application Constellations</h1>
     <p class="tagline">Give a goal in your domain, find transferrable analogies and
