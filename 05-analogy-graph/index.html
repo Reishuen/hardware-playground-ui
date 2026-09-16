@@ -411,10 +411,10 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
   display:grid;gap:10px}
 /* The box has to be tall enough to hold the instructions, or they land on the
    controls below while the field is still empty. */
-.conwrap{position:relative;min-height:2.95em}
+.conwrap{position:relative;min-height:1.5em}
 #seedin{width:100%;resize:none;overflow:hidden;background:transparent;border:0;
   outline:none;font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);
-  line-height:1.4;color:var(--ink);padding:2px 0;min-height:2.9em;display:block}
+  line-height:1.4;color:var(--ink);padding:2px 0;min-height:1.45em;display:block}
 .conghost{position:absolute;inset:2px 0 auto 0;pointer-events:none;
   font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);line-height:1.4;
   color:var(--ink-mute);transition:opacity .25s ease;max-width:68ch}
@@ -579,7 +579,32 @@ body.blank .vcbar,
 body.blank #dsec,
 body.blank details.fold{display:none}
 body.blank .console{margin-bottom:0}
-#newgen[hidden]{display:none}
+
+/* ---- Past generations, as a dropdown list ------------------------------ */
+.histwrap{position:relative;display:inline-flex}
+/* Opens downward: this console sits at the top of the page, so an upward popover
+   would hang off it. */
+.histpop{position:absolute;top:calc(100% + 9px);left:0;z-index:8;min-width:300px;
+  max-width:min(420px,84vw);max-height:340px;overflow-y:auto;padding:6px;
+  background:var(--card);border:1px solid var(--rule);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);display:grid;gap:2px}
+.histpop[hidden]{display:none}
+.histnew,.histrow{display:grid;width:100%;text-align:left;font:inherit;cursor:pointer;
+  background:transparent;border:0;border-radius:var(--r-md);padding:8px 11px;
+  color:var(--ink-soft)}
+.histnew{grid-auto-flow:column;justify-content:start;align-items:center;gap:8px;
+  font-size:13px;border-bottom:1px solid var(--rule-soft);border-radius:var(--r-md);
+  margin-bottom:2px;padding-bottom:10px}
+.histnew svg{width:15px;height:15px}
+.histnew:hover,.histrow:hover{background:var(--surface-2);color:var(--ink)}
+.histnew:focus-visible,.histrow:focus-visible{outline:2px solid var(--focus);
+  outline-offset:-2px}
+.histrow{gap:2px}
+.hr-t{font-size:13px;line-height:1.3;color:var(--ink);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.hr-m{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-mute)}
+.histrow[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.histrow[aria-pressed="true"] .hr-t{color:var(--accent);font-weight:600}
 </style>
 
 <div class="wrap">
@@ -618,16 +643,11 @@ body.blank .console{margin-bottom:0}
     <textarea id="seedin" rows="1" spellcheck="false"
       aria-label="a topic to abstract and trace"></textarea>
     <div class="conghost" id="seedghost" aria-hidden="true">
-      Name your domain and the goal in it — what you are trying to do, or what is
-      stopping you.
+      Name your domain and your goal in it
     </div>
   </div>
   <div class="conrow">
-    <button class="ghostbtn" id="newgen" hidden>
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"
-        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      New generation
-    </button>
+    <span class="histwrap">
     <button class="ghostbtn" id="histbtn" aria-expanded="false">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"
         fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10 6v4.2l2.8 1.7"
@@ -637,6 +657,15 @@ body.blank .console{margin-bottom:0}
         fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
         stroke-linejoin="round"/></svg>
     </button>
+    <div class="histpop" id="history" hidden>
+      <button class="histnew" id="newgen">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        New generation
+      </button>
+      <div class="histlist" id="seedbar"></div>
+    </div>
+    </span>
     <label class="conopt">model
       <select id="seedprov">
         <option value="muse">Muse Spark 1.3</option>
@@ -656,10 +685,6 @@ body.blank .console{margin-bottom:0}
         fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
         stroke-linejoin="round"/></svg>
     </button>
-  </div>
-  <div class="history" id="history" hidden>
-    <div class="seedbar" id="seedbar"></div>
-    <div class="modelbar" id="modelbar"></div>
   </div>
   <div class="constatus" id="seedstatus" hidden></div>
 </div>
@@ -781,7 +806,7 @@ function loadCorpus(i, keepSlot = false){
   const firstChain = D.domains.find(d => d.id !== "abstraction"
     && ((D.value_chains || {})[d.id] || (D.practice || {})[d.id]));
   if (firstChain) vcDom = firstChain.id;
-  renderHead(); renderSeedbar(); renderModelbar();
+  renderHead(); renderSeedbar();
   renderMeta(); renderSky();
   renderPanel(); renderVC();
 }
@@ -799,35 +824,6 @@ function loadTopic(sid){
   loadCorpus(CORPORA.indexOf(same || pool[0]));
 }
 
-function renderModelbar(){
-  if (ci < 0){ document.getElementById("modelbar").innerHTML = ""; return; }
-  const cur = CORPORA[ci];
-  const el = document.getElementById("modelbar");
-  if (cur.byHand){
-    el.innerHTML = `<span class="mlabel">model</span>
-      <span class="seg"><button class="segbtn" aria-pressed="true" disabled>
-        by hand<span class="segsub">reference case</span></button></span>`;
-    return;
-  }
-  const runs = runsFor(cur.seedId, cur.axis);
-  const segs = PROVIDERS.map(p => {
-    const c = runs.find(r => r.provider === p.key);
-    if (!c) return `<button class="segbtn" disabled aria-pressed="false">
-        ${p.label}<span class="segsub">not run yet</span></button>`;
-    const nf = c.data.domains.length - 1;
-    const failed = (c.data.seed.failed_domains || []).length;
-    const sub = `${nf} field${nf === 1 ? "" : "s"}` + (failed ? ` · ${failed} dropped` : "")
-      + ` · ${c.data.nodes.length} nodes`;
-    return `<button class="segbtn" aria-pressed="${c === cur}" data-i="${CORPORA.indexOf(c)}">
-        ${c.modelShort}<span class="segsub">${sub}</span></button>`;
-  }).join("");
-  const n = runs.length;
-  el.innerHTML = `<span class="mlabel">model</span><span class="seg">${segs}</span>
-    <span class="mhint">${n} of ${PROVIDERS.length} models have run this seed · toggling keeps the slot</span>`;
-  el.querySelectorAll(".segbtn[data-i]").forEach(b =>
-    b.addEventListener("click", () => loadCorpus(+b.dataset.i, true)));
-}
-
 function renderHead(){
   // The header names the tool and nothing else. Which seed is on show is already
   // said by the pressed button in the history drawer and by the graph itself.
@@ -839,24 +835,19 @@ function renderSeedbar(){
   document.getElementById("seedbar").innerHTML = TOPICS.map(sid => {
     const runs = corporaFor(sid);
     const c = runs[0];
-    const axes = axesFor(sid).map(a => a.key);
-    const sub = c.byHand ? "by hand"
-      : axes.includes("both") ? `<span class="n">both axes</span> merged`
-      : `<span class="n">${runs.length}</span> run${runs.length === 1 ? "" : "s"} · `
-        + `${axes.join(" + ") || "structure"} only`;
+    const nf = (c.data.domains || []).length - 1;
+    const dom = c.domain && c.domain !== "—" ? c.domain.replace(/_/g, " ") : "";
     return `
-    <button class="seedbtn" aria-pressed="${sid === curSid}" data-sid="${sid}">
-      <span class="sdom">${(c.domain || "").replace(/_/g," ")}</span>
-      <b>${c.short}</b>
-      <span class="smodel">${sub}</span>
+    <button class="histrow" aria-pressed="${sid === curSid}" data-sid="${sid}">
+      <span class="hr-t">${esc(c.short)}</span>
+      <span class="hr-m">${nf} field${nf === 1 ? "" : "s"}${dom ? " · " + esc(dom) : ""}</span>
     </button>`;
   }).join("");
-  document.querySelectorAll(".seedbtn").forEach(b =>
+  document.querySelectorAll(".histrow").forEach(b =>
     b.addEventListener("click", () => {
       loadTopic(b.dataset.sid);
       setBlank(false);
-      histEl.hidden = true;
-      histBtn.setAttribute("aria-expanded", "false");
+      closeHist();
     }));
 }
 
@@ -2002,11 +1993,21 @@ document.getElementById("th-dark").addEventListener("click", () => setTheme("dar
 // back catalogue is something you go and get.
 const histBtn = document.getElementById("histbtn");
 const histEl = document.getElementById("history");
-histBtn.addEventListener("click", () => {
+function closeHist(){
+  histEl.hidden = true;
+  histBtn.setAttribute("aria-expanded", "false");
+}
+histBtn.addEventListener("click", e => {
+  e.stopPropagation();
   const open = histEl.hidden;
   histEl.hidden = !open;
   histBtn.setAttribute("aria-expanded", String(open));
 });
+document.addEventListener("click", e => {
+  if (!histEl.hidden && !histEl.contains(e.target) && e.target !== histBtn)
+    closeHist();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeHist(); });
 function histCount(){
   const n = TOPICS.length;
   document.getElementById("histlabel").textContent =
@@ -2015,19 +2016,19 @@ function histCount(){
 
 /* ---- Blank first ------------------------------------------------------- */
 function setBlank(on){
+  // "New generation" lives in the dropdown now and is always offered, the way the
+  // reference always offers a new conversation.
   document.body.classList.toggle("blank", on);
-  document.getElementById("newgen").hidden = on;
   if (on){
     ci = -1; D = null; byId = null; selected = null; vcDom = null; vcSel = null;
-    renderSeedbar(); renderModelbar();
+    renderSeedbar();
     const pop = document.getElementById("nodepop");
     if (pop) pop.hidden = true;
   }
 }
 document.getElementById("newgen").addEventListener("click", () => {
   setBlank(true);
-  histEl.hidden = true;
-  histBtn.setAttribute("aria-expanded", "false");
+  closeHist();
   seedIn.focus();
   window.scrollTo({top: 0, behavior: "smooth"});
 });
@@ -2063,7 +2064,7 @@ function conAdd(html, cls){
 function conTyping(){
   conEl.classList.toggle("typing", seedIn.value.trim().length >= 3);
   seedIn.style.height = "auto";
-  seedIn.style.height = Math.max(seedIn.scrollHeight, 58) + "px";
+  seedIn.style.height = Math.max(seedIn.scrollHeight, 30) + "px";
 }
 seedIn.addEventListener("input", conTyping);
 seedIn.addEventListener("keydown", e => {
