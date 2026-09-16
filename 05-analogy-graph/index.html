@@ -411,14 +411,16 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
   display:grid;gap:10px}
 /* The box has to be tall enough to hold the instructions, or they land on the
    controls below while the field is still empty. */
-.conwrap{position:relative;min-height:2.95em}
+.conwrap{position:relative;min-height:1.5em}
 #seedin{width:100%;resize:none;overflow:hidden;background:transparent;border:0;
   outline:none;font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);
-  line-height:1.4;color:var(--ink);padding:2px 0;min-height:2.9em;display:block}
+  line-height:1.4;color:var(--ink);padding:2px 0;min-height:1.45em;display:block}
 .conghost{position:absolute;inset:2px 0 auto 0;pointer-events:none;
   font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);line-height:1.4;
-  color:var(--ink-mute);transition:opacity .25s ease;max-width:68ch}
+  color:var(--ink-mute);transition:opacity .25s ease;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .conghost b{font-weight:600;color:var(--ink-soft)}
+.conghost i{font-style:italic;color:var(--ink-mute)}
 .console.typing .conghost{opacity:0}
 .conrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
   border-top:1px solid var(--rule-soft);padding-top:10px}
@@ -541,14 +543,20 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);
   letter-spacing:0;color:var(--ink-soft);background:var(--surface-2);
   border:1px solid var(--rule);border-radius:999px;padding:4px 9px}
 .conopt select:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.concode{margin-left:auto;width:96px;font:inherit;font-size:12px;
-  background:var(--surface-2);border:1px solid var(--rule);border-radius:999px;
-  padding:6px 12px;color:var(--ink)}
-.concode:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-/* Only when the code field is actually shown — a hidden sibling still matches `+`,
-   which was stealing the send button's auto margin and parking it mid-row. */
-.concode:not([hidden])+.consend{margin-left:8px}
-.concode[hidden]{display:none}
+/* Shown only on a shared copy. Unlabelled it read as a mystery box next to the
+   send button, so it carries a padlock and says what it is. */
+.codewrap{margin-left:auto;display:inline-flex;align-items:center;gap:7px;
+  padding:4px 12px 4px 11px;background:var(--surface-2);border:1px solid var(--rule);
+  border-radius:999px;color:var(--ink-mute)}
+.codewrap[hidden]{display:none}
+.codewrap svg{width:14px;height:14px;flex:none}
+.concode{width:110px;font:inherit;font-size:12px;background:transparent;border:0;
+  outline:none;color:var(--ink)}
+.concode::placeholder{color:var(--ink-mute)}
+.codewrap:focus-within{border-color:var(--accent);color:var(--accent)}
+/* A hidden sibling still matches `+`, which was stealing the send button's auto
+   margin and parking it mid-row. */
+.codewrap:not([hidden])+.consend{margin-left:8px}
 .consend{margin-left:auto;width:36px;height:36px;flex:none;display:grid;
   place-items:center;cursor:pointer;border-radius:999px;border:1px solid var(--rule);
   background:var(--surface-2);color:var(--ink-soft);padding:0}
@@ -611,6 +619,8 @@ body.blank .console{margin-bottom:0}
 .hr-t{font-size:13px;line-height:1.3;color:var(--ink);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .hr-m{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-mute)}
+.histrow .hr-m::first-line{color:var(--ink-mute)}
+.histpop .histrow[data-v="muse"] .hr-m{color:var(--accent)}
 .histrow[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .histrow[aria-pressed="true"] .hr-t{color:var(--accent);font-weight:600}
 
@@ -699,8 +709,7 @@ body.blank .console{margin-bottom:0}
     <textarea id="seedin" rows="1" spellcheck="false"
       aria-label="a topic to abstract and trace"></textarea>
     <div class="conghost" id="seedghost" aria-hidden="true">
-      Name your domain and your goal in it — e.g. “battery design: stop cells
-      degrading so fast when charged quickly”
+      Name your domain and your goal in it — e.g. <i id="seedeg"></i>
     </div>
   </div>
   <div class="conrow">
@@ -752,8 +761,16 @@ body.blank .console{margin-bottom:0}
       </button>
       <div class="histpop" id="npop" hidden></div>
     </span>
-    <input id="seedcode" class="concode" type="password" placeholder="code"
-      autocomplete="off" aria-label="access code" hidden>
+    <span class="codewrap" id="codewrap" hidden>
+      <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4.5" y="9" width="11"
+        height="7.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path
+        d="M7.2 9V7a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor"
+        stroke-width="1.4"/></svg>
+      <input id="seedcode" class="concode" type="password" placeholder="access code"
+        autocomplete="off" aria-label="access code"
+        title="This copy is shared, so generating asks for the code the owner gave you.
+Reading the existing constellations needs nothing.">
+    </span>
     <button id="seedgo" class="consend" aria-label="form the analogy" title="form the analogy">
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15.5V5M5.5 9.5L10 5l4.5 4.5"
         fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
@@ -944,8 +961,12 @@ function renderSeedbar(){
       <span class="hr-m">${nf} field${nf === 1 ? "" : "s"}${dom ? " · " + esc(dom) : ""}</span>
     </button>`;
   }).join("");
-  document.querySelectorAll(".histrow").forEach(b =>
+  // Scoped to the history list. The pickers reuse .histrow, so an unscoped query
+  // bound "load this generation" to the model and field-count rows too — picking a
+  // field count was popping the graph open.
+  document.querySelectorAll("#seedbar .histrow").forEach(b =>
     b.addEventListener("click", () => {
+      if (!b.dataset.sid) return;
       loadTopic(b.dataset.sid);
       setBlank(false);
       closeHist();
@@ -2150,7 +2171,7 @@ function picker(btnId, popId, labelId, inputId, items, fmt){
 }
 
 picker("provbtn", "provpop", "provlabel", "seedprov", [
-  {value: "muse", label: "Muse Spark 1.3", note: "fast · the corpus was built on it"},
+  {value: "muse", label: "Muse Spark 1.3", note: "suggested · fast, and the corpus was built on it"},
   {value: "openai", label: "GPT-5.6 Luna", note: "most predictions per seed"},
   {value: "gemini", label: "Gemini 3.8 Flash", note: "boldest maths · least reliable"},
 ], v => ({muse: "Muse Spark 1.3", openai: "GPT-5.6 Luna",
@@ -2190,6 +2211,26 @@ setBlank(true);
    served by harness/serve.py — the published copy is a static file and cannot
    run anything. Rather than hide the box on the static host, it degrades to
    handing you the exact command, which is the honest version of the feature. */
+/* A different example each load. They are deliberately terse and in the vocabulary
+   of the field — "domain: the thing you want" — because the grey line has one job,
+   which is to show how specific to be, and a vague example teaches vagueness. */
+const EGS = [
+  "photolithography: line-edge roughness under 2 nm",
+  "Li-ion: arrest SEI growth at 4C",
+  "cryo-EM: kill preferred orientation",
+  "Ni catalysis: stop coke fouling",
+  "LPBF: no keyhole porosity in Ti-6Al-4V",
+  "LNPs: endosomal escape past 5%",
+  "CMOS: cut 1/f noise at low current",
+  "anaerobic digestion: hold VFA below inhibition",
+  "Zn anodes: flatten dendrite nucleation",
+  "sub-salt seismic: resolve under the overburden",
+  "perovskite PV: halt ion migration at 85 °C",
+  "divertor: heat flux below 10 MW/m²",
+];
+const egEl = document.getElementById("seedeg");
+if (egEl) egEl.textContent = "“" + EGS[Math.floor(Math.random() * EGS.length)] + "”";
+
 const conEl = document.getElementById("console");
 const seedIn = document.getElementById("seedin");
 const seedGo = document.getElementById("seedgo");
@@ -2212,7 +2253,7 @@ function conAdd(html, cls){
 function conTyping(){
   conEl.classList.toggle("typing", seedIn.value.trim().length >= 3);
   seedIn.style.height = "auto";
-  seedIn.style.height = Math.max(seedIn.scrollHeight, 58) + "px";
+  seedIn.style.height = Math.max(seedIn.scrollHeight, 30) + "px";
 }
 seedIn.addEventListener("input", conTyping);
 seedIn.addEventListener("keydown", e => {
@@ -2252,8 +2293,9 @@ async function runSeed(){
   }
   const code = (document.getElementById("seedcode").value || "").trim();
   if (needCode && !code){
-    conSay("This copy is shared, so it asks for the code before it spends anybody's "
-      + "API budget. Put it in the box next to the arrow.", "err");
+    conSay("This copy is shared, so generating asks for the code its owner gave you "
+      + "— it spends their API budget. Reading the constellations already here needs "
+      + "nothing.", "err");
     document.getElementById("seedcode").focus();
     return;
   }
@@ -2379,7 +2421,7 @@ fetch("api/ping").then(r => r.ok && r.json()).then(j => {
     runLive = true;                       // the box can run the passes for real
     conEl.classList.add("live");
     needCode = !!j.gated;
-    if (needCode) document.getElementById("seedcode").hidden = false;
+    if (needCode) document.getElementById("codewrap").hidden = false;
     if (typeof j.left === "number")
       document.getElementById("histlabel").parentElement.title =
         `${j.left} run${j.left === 1 ? "" : "s"} left today`;
