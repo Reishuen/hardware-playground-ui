@@ -1,43 +1,65 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Analogy &amp; Application Graphs</title>
+<title>Analogy &amp; Application Constellations</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
+/* Two skins, one structure. Light is sand with terracotta on it; dark is the near
+   black Claude uses, with the same terracotta carrying the accents. The field hues
+   are retuned to sit with terracotta rather than fight it — they have to stay
+   distinguishable from each other at 5px on a 1400-unit canvas, which is the real
+   constraint on this palette. */
+/* Palette lifted from the co-experimentalist dashboard so the two read as one
+   suite: sand #ECE6DA with near-black ink and terracotta #B4552F on it, and a
+   near-black #1C1B19 with warm off-white for dark. The field hues are the part
+   that is ours — they have to stay apart from each other at 5px on a 1400-unit
+   canvas — so they are retuned to sit with terracotta instead of fighting it. */
 :root{
-  --ground:#eceff3; --surface:#fbfcfd; --surface-2:#f2f5f8; --field:#e3e8ee;
-  --ink:#141922; --ink-soft:#3b4653; --ink-mute:#6a7583;
-  --rule:#d1d8e0; --rule-soft:#e2e7ed;
-  --spine:#1b212b;
-  --c1:#2f7d5c; --c2:#6b4fb8; --c3:#9c6a10; --c4:#2e6c99; --c5:#ab4436;
-  --c6:#1f7f80; --c7:#8a4a7d;
-  --flag-diverge:#ab4436; --flag-predict:#9c6a10;
-  --a-know:#6b4fb8; --a-tool:#2e6c99; --a-prod:#2f7d5c;
-  --focus:#2e6c99;
+  --ground:#ECE6DA; --surface:#F7F3EA; --surface-2:#E7E0D1; --field:#F2EDE2;
+  --card:#FDFBF6;
+  --ink:#201E1A; --ink-soft:#57524A; --ink-mute:#6B6558;
+  --rule:#DCD2BE; --rule-soft:#E6DECB;
+  --spine:#201E1A;
+  --accent:#B4552F;
+  --c1:#5F7238; --c2:#7A4A68; --c3:#A8761F; --c4:#3A6B77; --c5:#B4552F;
+  --c6:#2E6A5C; --c7:#8A5576;
+  --flag-diverge:#B4552F; --flag-predict:#A8761F;
+  --a-know:#7A4A68; --a-tool:#3A6B77; --a-prod:#5F7238;
+  --focus:#B4552F;
+  --shadow:0 8px 28px rgba(32,30,26,.10);
   --serif:"Spectral",Georgia,"Times New Roman",serif;
   --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r-xl:18px; --r-lg:14px; --r-md:10px; --r-sm:8px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --field:#11161d;
-  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
-  --rule:#2a323d; --rule-soft:#212832;
-  --spine:#d5dce4;
-  --c1:#5fb98d; --c2:#a78bec; --c3:#d3a03a; --c4:#68a8d6; --c5:#e0776a;
-  --c6:#4fc0c1; --c7:#cb85bc;
-  --flag-diverge:#e0776a; --flag-predict:#d3a03a; --focus:#68a8d6;
-  --a-know:#a78bec; --a-tool:#68a8d6; --a-prod:#5fb98d;
+  --ground:#1C1B19; --surface:#232220; --surface-2:#2A2926; --field:#1F1E1C;
+  --card:#2A2926;
+  --ink:#F5F3EE; --ink-soft:#B3ADA1; --ink-mute:#8A8478;
+  --rule:#3D3B36; --rule-soft:#302E2A;
+  --spine:#F5F3EE;
+  --accent:#CC6B42;
+  --c1:#9FB061; --c2:#C08BB0; --c3:#DFAE55; --c4:#6FA8B3; --c5:#CC6B42;
+  --c6:#5FB49B; --c7:#C795B5;
+  --flag-diverge:#CC6B42; --flag-predict:#DFAE55;
+  --a-know:#C08BB0; --a-tool:#6FA8B3; --a-prod:#9FB061;
+  --focus:#CC6B42;
+  --shadow:0 12px 34px rgba(0,0,0,.45);
 }}
 :root[data-theme="dark"]{
-  --ground:#0d1117; --surface:#161b23; --surface-2:#1d2430; --field:#11161d;
-  --ink:#e8ecf1; --ink-soft:#b0bac6; --ink-mute:#7b8896;
-  --rule:#2a323d; --rule-soft:#212832;
-  --spine:#d5dce4;
-  --c1:#5fb98d; --c2:#a78bec; --c3:#d3a03a; --c4:#68a8d6; --c5:#e0776a;
-  --c6:#4fc0c1; --c7:#cb85bc;
-  --flag-diverge:#e0776a; --flag-predict:#d3a03a; --focus:#68a8d6;
-  --a-know:#a78bec; --a-tool:#68a8d6; --a-prod:#5fb98d;
+  --ground:#1C1B19; --surface:#232220; --surface-2:#2A2926; --field:#1F1E1C;
+  --card:#2A2926;
+  --ink:#F5F3EE; --ink-soft:#B3ADA1; --ink-mute:#8A8478;
+  --rule:#3D3B36; --rule-soft:#302E2A;
+  --spine:#F5F3EE;
+  --accent:#CC6B42;
+  --c1:#9FB061; --c2:#C08BB0; --c3:#DFAE55; --c4:#6FA8B3; --c5:#CC6B42;
+  --c6:#5FB49B; --c7:#C795B5;
+  --flag-diverge:#CC6B42; --flag-predict:#DFAE55;
+  --a-know:#C08BB0; --a-tool:#6FA8B3; --a-prod:#9FB061;
+  --focus:#CC6B42;
+  --shadow:0 12px 34px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
@@ -56,18 +78,20 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,42px);lin
 .seedbar{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 6px;
   padding-bottom:16px;border-bottom:1px solid var(--rule)}
 .seedbtn{font:inherit;font-size:12.5px;cursor:pointer;text-align:left;
-  background:var(--surface);border:1px solid var(--rule);border-radius:2px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-sm);
   padding:6px 11px;color:var(--ink-soft);display:grid;gap:1px;line-height:1.3}
 .seedbtn:hover{border-color:var(--ink-mute);color:var(--ink)}
 .seedbtn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.seedbtn[aria-pressed="true"]{background:var(--surface-2);border-color:var(--ink);color:var(--ink)}
+.seedbtn[aria-pressed="true"]{background:var(--surface-2);
+  border-color:var(--accent);color:var(--ink)}
+.seedbtn[aria-pressed="true"] b{color:var(--accent)}
 .seedbtn .sdom{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-mute)}
 .seedbtn b{font-weight:600}
 .seedbtn .smodel{font-family:var(--mono);font-size:9px;letter-spacing:.06em;
   color:var(--ink-mute);margin-top:2px}
 .seedbtn[aria-pressed="true"] .smodel{color:var(--ink-soft)}
-.seedbtn .smodel .n{color:var(--focus)}
+.seedbtn .smodel .n{color:var(--accent)}
 
 /* Model row: one segmented control per topic. Segments for a model that has not run
    on this topic are present but disabled, so a gap reads as "pending", not "absent". */
@@ -75,7 +99,7 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,42px);lin
   padding-bottom:16px;border-bottom:1px solid var(--rule)}
 .modelbar .mlabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-mute)}
-.seg{display:inline-flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden;
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r-sm);overflow:hidden;
   background:var(--surface)}
 .segbtn{font:inherit;font-size:12.5px;cursor:pointer;background:transparent;border:0;
   border-right:1px solid var(--rule);padding:6px 12px;color:var(--ink-soft);
@@ -83,8 +107,9 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,42px);lin
 .segbtn:last-child{border-right:0}
 .segbtn:hover:not(:disabled){color:var(--ink);background:var(--surface-2)}
 .segbtn:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
-.segbtn[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
-.segbtn[aria-pressed="true"] .segsub{color:var(--ground);opacity:.75}
+.segbtn[aria-pressed="true"]{background:var(--surface-2);color:var(--accent);
+  font-weight:500}
+.segbtn[aria-pressed="true"] .segsub{color:var(--ink-mute)}
 .segbtn:disabled{cursor:default;color:var(--ink-mute);opacity:.6}
 .segbtn .segsub{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--ink-mute)}
 .modelbar .mhint{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);margin-left:auto}
@@ -92,13 +117,13 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,42px);lin
 
 .meta{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:16px 0 10px}
 .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
-  padding:3px 8px;border-radius:2px;border:1px solid var(--rule);color:var(--ink-mute);
+  padding:3px 8px;border-radius:var(--r-sm);border:1px solid var(--rule);color:var(--ink-mute);
   background:var(--surface)}
 .tag.model{border-color:var(--focus);color:var(--focus)}
 .tag.hand{border-color:var(--ink-mute);color:var(--ink-soft)}
 .tag.axis{border-color:var(--flag-predict);color:var(--flag-predict)}
 
-.figure{background:var(--field);border:1px solid var(--rule-soft);border-radius:3px;
+.figure{background:var(--field);border:1px solid var(--rule-soft);border-radius:var(--r-lg);
   /* visible, not hidden: a node's card has to be able to hang past the frame or the
      nodes near an edge are the ones you cannot read. */
   overflow:visible;position:relative}
@@ -108,7 +133,7 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,42px);lin
 .figure.wide{width:100vw;margin-inline:calc(50% - 50vw);border-radius:0;
   border-inline:0}
 @media (min-width:1800px){.figure.wide{width:min(100vw,1760px);
-  margin-inline:calc(50% - min(50vw,880px));border-radius:3px;
+  margin-inline:calc(50% - min(50vw,880px));border-radius:var(--r-lg);
   border-inline:1px solid var(--rule-soft)}}
 svg#sky{display:block;width:100%;height:auto}
 .hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-mute);
@@ -123,19 +148,19 @@ svg#sky{display:block;width:100%;height:auto}
   text-transform:uppercase;fill:var(--ink-mute);pointer-events:none}
 
 .panel{margin-top:22px;background:var(--surface);border:1px solid var(--rule);
-  border-radius:3px;border-top:3px solid var(--dc,var(--spine));padding:19px 21px;
+  border-radius:var(--r-lg);border-top:3px solid var(--dc,var(--spine));padding:19px 21px;
   display:grid;gap:12px}
 .ptop{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
 .pdom{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--dc,var(--ink-mute))}
 .pslot{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--ink-mute)}
-.panel h2{font-family:var(--serif);font-size:23px;font-weight:600;margin:0;line-height:1.2;
+.panel h2{font-family:var(--serif);font-size:23px;color:var(--accent);font-weight:600;margin:0;line-height:1.2;
   text-wrap:balance}
 .panel p{margin:0;max-width:66ch;color:var(--ink-soft)}
 .panel p strong{color:var(--ink);font-weight:600}
 .eq{font-family:var(--mono);font-size:13px;line-height:1.75;white-space:pre-wrap;
-  background:var(--surface-2);border:1px solid var(--rule-soft);border-radius:2px;
+  background:var(--surface-2);border:1px solid var(--rule-soft);border-radius:var(--r-sm);
   padding:11px 13px;overflow-x:auto;color:var(--ink)}
 .note{border-left:2px solid var(--dc,var(--rule));padding-left:13px;font-family:var(--serif);
   font-size:15px;font-style:italic;color:var(--ink-soft);max-width:62ch}
@@ -144,7 +169,7 @@ svg#sky{display:block;width:100%;height:auto}
 .xlist{display:flex;flex-wrap:wrap;gap:6px}
 .xlist button{font:inherit;font-size:12px;cursor:pointer;background:var(--surface-2);
   border:1px solid var(--rule-soft);border-left:3px solid var(--dc,var(--spine));
-  border-radius:2px;padding:4px 9px;color:var(--ink-soft)}
+  border-radius:var(--r-sm);padding:4px 9px;color:var(--ink-soft)}
 .xlist button:hover{color:var(--ink);border-color:var(--ink-mute)}
 .xlist button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .flag{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
@@ -188,11 +213,11 @@ footer code{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
   text-transform:uppercase;color:var(--ink-mute);margin-right:3px}
 .vcbtn{font:inherit;font-size:12.5px;cursor:pointer;background:var(--surface);
   border:1px solid var(--rule);border-left:3px solid var(--dc,var(--spine));
-  border-radius:2px;padding:5px 10px;color:var(--ink-soft);line-height:1.3}
+  border-radius:var(--r-sm);padding:5px 10px;color:var(--ink-soft);line-height:1.3}
 .vcbtn:hover{color:var(--ink);border-color:var(--ink-mute);border-left-color:var(--dc)}
 .vcbtn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.vcbtn[aria-pressed="true"]{background:var(--surface-2);border-color:var(--ink);
-  border-left-color:var(--dc);color:var(--ink);font-weight:500}
+.vcbtn[aria-pressed="true"]{background:var(--surface-2);border-color:var(--dc);
+  color:var(--ink);font-weight:500}
 svg#chain{display:block;width:100%;height:auto}
 
 .pfig{cursor:pointer}
@@ -217,7 +242,7 @@ svg#chain{display:block;width:100%;height:auto}
   text-transform:uppercase;fill:var(--ink-mute)}
 .seamlab.new{fill:var(--flag-predict)}
 .formchip{font-family:var(--mono);font-size:10px;letter-spacing:.09em;
-  text-transform:uppercase;padding:3px 8px;border-radius:2px;border:1px solid var(--fmc);
+  text-transform:uppercase;padding:3px 8px;border-radius:var(--r-sm);border:1px solid var(--fmc);
   color:var(--fmc);background:var(--surface)}
 .formline{display:flex;flex-wrap:wrap;gap:9px;align-items:baseline;margin:2px 0 12px}
 .formline .g{font-family:var(--serif);font-style:italic;font-size:14px;
@@ -247,10 +272,10 @@ svg#chain{display:block;width:100%;height:auto}
 .vcgrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;
   margin-top:20px}
 @media (max-width:860px){.vcgrid{grid-template-columns:1fr}}
-.vcpanel{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+.vcpanel{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-lg);
   border-top:3px solid var(--dc,var(--spine));padding:18px 20px;display:grid;gap:11px;
   align-content:start}
-.vcpanel h3{font-family:var(--serif);font-size:21px;font-weight:600;margin:0;
+.vcpanel h3{font-family:var(--serif);font-size:21px;color:var(--accent);font-weight:600;margin:0;
   line-height:1.2;text-wrap:balance}
 .vcpanel p{margin:0;color:var(--ink-soft);max-width:62ch}
 .vcpanel .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
@@ -259,7 +284,7 @@ svg#chain{display:block;width:100%;height:auto}
   font-family:var(--serif);font-size:15px;color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
-  padding:3px 7px;border-radius:2px;border:1px solid var(--rule);color:var(--ink-mute);
+  padding:3px 7px;border-radius:var(--r-sm);border:1px solid var(--rule);color:var(--ink-mute);
   background:var(--surface-2)}
 .chip.k{border-color:var(--ck);color:var(--ck)}
 .chip.ready{border-style:dashed}
@@ -273,7 +298,7 @@ button.chip:hover{color:var(--ink);border-color:var(--ink-mute)}
 .skip{border-left:3px dashed var(--ink-mute);padding-left:11px;font-size:13px;
   color:var(--ink-mute)}
 .skip b{color:var(--ink-soft);font-weight:600}
-.term{background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;
+.term{background:var(--surface-2);border:1px solid var(--rule);border-radius:var(--r-lg);
   padding:17px 19px;display:grid;gap:9px;align-content:start}
 .term h4{margin:0;font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.25}
 .term .row{display:grid;gap:1px}
@@ -303,7 +328,7 @@ button.chip:hover{color:var(--ink);border-color:var(--ink-mute)}
    COMMUNITIES DO. It is laid out as home field | what could cross | analogue
    field, so a transfer is read across a row and its direction is a mark in the
    middle cell rather than a sentence you have to parse. */
-.dsub{font-family:var(--serif);font-weight:600;font-size:clamp(17px,2.2vw,21px);
+.dsub{font-family:var(--serif);font-weight:600;color:var(--accent);font-size:clamp(17px,2.2vw,21px);
   margin:34px 0 6px;line-height:1.2;letter-spacing:-.005em}
 .dlede{margin:0 0 15px;font-size:14px;color:var(--ink-soft);max-width:72ch}
 .prboard{display:grid;gap:9px}
@@ -323,7 +348,7 @@ button.chip:hover{color:var(--ink);border-color:var(--ink-mute)}
 .prcols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .prrow{display:grid;grid-template-columns:1fr minmax(0,1.05fr) 1fr;gap:12px;
   align-items:stretch}
-.pcard{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+.pcard{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-lg);
   border-left:3px solid var(--sc,var(--rule));padding:12px 14px;display:grid;gap:5px;
   align-content:start}
 .pcard.quiet{background:transparent;border-style:dashed;border-left-style:dashed}
@@ -334,7 +359,7 @@ button.chip:hover{color:var(--ink);border-color:var(--ink-mute)}
 .pcard .pc{font-family:var(--mono);font-size:10px;color:var(--ink-mute);line-height:1.5}
 .pcard .plbl{font-family:var(--mono);font-size:9px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-mute)}
-.xfer{background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;
+.xfer{background:var(--surface-2);border:1px solid var(--rule);border-radius:var(--r-lg);
   border-top:3px solid var(--xc,var(--spine));padding:12px 14px;display:grid;gap:6px;
   align-content:start}
 .xarrow{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:9.5px;
@@ -378,10 +403,10 @@ details.more .mb>p{margin:0}
    figure are the product; every paragraph on the page folds away behind a
    summary so neither has to compete with prose. */
 .masthead{gap:5px;padding-bottom:12px}
-h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
+h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
 .eyebrow strong{color:var(--ink-soft);font-weight:600}
 .console{margin:6px 0 14px;background:var(--surface);border:1px solid var(--rule);
-  border-radius:3px;border-top:3px solid var(--focus);padding:14px 16px 12px;
+  border-radius:var(--r-lg);border-top:3px solid var(--focus);padding:14px 16px 12px;
   display:grid;gap:10px}
 /* The box has to be tall enough to hold the instructions, or they land on the
    controls below while the field is still empty. */
@@ -402,11 +427,8 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
   gap:6px}
 .conopts select{font:inherit;font-family:var(--sans);font-size:12px;
   text-transform:none;letter-spacing:0;color:var(--ink-soft);background:var(--surface-2);
-  border:1px solid var(--rule);border-radius:2px;padding:4px 6px}
+  border:1px solid var(--rule);border-radius:var(--r-sm);padding:4px 6px}
 .conopts select:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.congo{margin-left:auto;font:inherit;font-size:13px;cursor:pointer;
-  background:var(--ink);color:var(--ground);border:1px solid var(--ink);
-  border-radius:2px;padding:7px 15px}
 .congo:hover{opacity:.88}
 .congo:disabled{opacity:.45;cursor:default}
 .congo:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -416,7 +438,7 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
   max-height:210px;overflow-y:auto}
 .constatus .err{color:var(--flag-diverge)}
 .constatus .ok{color:var(--c1)}
-.constatus code{background:var(--surface-2);padding:2px 5px;border-radius:2px;
+.constatus code{background:var(--surface-2);padding:2px 5px;border-radius:var(--r-sm);
   font-size:11px;color:var(--ink);display:inline-block;margin-top:3px;
   user-select:all;word-break:break-all}
 
@@ -434,9 +456,9 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
    has to be honoured explicitly or the close button appears to do nothing. */
 .nodepop[hidden]{display:none}
 .nodepop{position:absolute;z-index:6;width:min(310px,80vw);
-  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-lg);
   border-top:3px solid var(--pc,var(--spine));
-  box-shadow:0 12px 34px rgba(0,0,0,.22);padding:13px 15px 12px;
+  box-shadow:var(--shadow);padding:13px 15px 12px;
   display:grid;gap:8px;transform:translate(16px,-50%)}
 .nodepop.flip{transform:translate(calc(-100% - 16px),-50%)}
 .nodepop.up{transform:translate(16px,calc(-100% + 18px))}
@@ -451,7 +473,7 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
   text-transform:uppercase;color:var(--pc,var(--ink-mute));padding-right:18px;
   line-height:1.5}
 .poptitle{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.22;
-  color:var(--ink);text-wrap:balance}
+  color:var(--accent);text-wrap:balance}
 .nodepop p{margin:0;font-size:13px;color:var(--ink-soft);line-height:1.55}
 .nodepop .eq{font-size:11.5px;padding:8px 10px;line-height:1.6}
 .nodepop .note{font-size:13px;padding-left:11px;border-left:2px solid var(--pc)}
@@ -462,11 +484,100 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
   .nodepop,.nodepop.flip,.nodepop.up,.nodepop.flip.up{position:static;transform:none;
     width:auto;margin:10px;box-shadow:none}
 }
+
+/* ---- Brand, theme switch, and the console as the main element ---------- */
+.masthead{gap:6px;padding-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;flex:none;color:var(--accent)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);
+  letter-spacing:-.015em;line-height:1.05;margin:0;color:var(--ink)}
+.themes{margin-left:auto;display:inline-flex;gap:2px;padding:3px;
+  background:var(--surface-2);border:1px solid var(--rule);border-radius:999px}
+.themes button{width:30px;height:26px;display:grid;place-items:center;cursor:pointer;
+  background:transparent;border:0;border-radius:999px;color:var(--ink-mute);padding:0}
+.themes button svg{width:16px;height:16px}
+.themes button:hover{color:var(--ink-soft)}
+.themes button[aria-pressed="true"]{background:var(--card);color:var(--accent);
+  box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.themes button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.eyebrow{font-size:10.5px}
+
+.console{margin:10px 0 18px;background:var(--card);border:1px solid var(--rule);
+  border-radius:var(--r-xl);border-top:1px solid var(--rule);
+  box-shadow:var(--shadow);padding:16px 18px 12px;display:grid;gap:12px}
+.conrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:0;
+  padding-top:0}
+.ghostbtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12.5px;
+  cursor:pointer;background:transparent;border:1px solid transparent;border-radius:999px;
+  padding:5px 11px 5px 9px;color:var(--ink-mute)}
+.ghostbtn svg{width:15px;height:15px;flex:none}
+.ghostbtn .chev{width:13px;height:13px;transition:transform .18s}
+.ghostbtn[aria-expanded="true"]{background:var(--surface-2);color:var(--ink-soft)}
+.ghostbtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.ghostbtn:hover{color:var(--ink-soft);background:var(--surface-2)}
+.ghostbtn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.conopt{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute)}
+.conopt select{font-family:var(--sans);font-size:12px;text-transform:none;
+  letter-spacing:0;color:var(--ink-soft);background:var(--surface-2);
+  border:1px solid var(--rule);border-radius:999px;padding:4px 9px}
+.conopt select:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.consend{margin-left:auto;width:36px;height:36px;flex:none;display:grid;
+  place-items:center;cursor:pointer;border-radius:999px;border:1px solid var(--rule);
+  background:var(--surface-2);color:var(--ink-soft);padding:0}
+.consend svg{width:18px;height:18px}
+.consend:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.consend:disabled{opacity:.4;cursor:default}
+.consend:disabled:hover{background:var(--surface-2);border-color:var(--rule);
+  color:var(--ink-soft)}
+.consend:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* Served by the runner, the button is armed; on the static copy it hands you the
+   command instead, so it stays quiet. */
+.console.live .consend{background:var(--accent);border-color:var(--accent);color:#fff}
+.console.live .consend:hover{filter:brightness(1.08)}
+.history{border-top:1px solid var(--rule-soft);padding-top:12px;display:grid;gap:0}
+.history[hidden]{display:none}
+.history .seedbar{margin:0;padding-bottom:12px}
+.history .modelbar:last-child{padding-bottom:0;border-bottom:0}
+.seedbtn,.segbtn,.vcbtn,.chip,button.chip{border-radius:999px}
+.seedbtn{padding:7px 13px}
+.seg{border-radius:999px}
+.figure{border-radius:var(--r-lg);border-color:var(--rule)}
+.figure.wide{border-radius:0}
+@media (min-width:1800px){.figure.wide{border-radius:var(--r-lg)}}
+.panel,.vcpanel,.term,.pcard,.xfer,.nodepop,.constatus code{border-radius:var(--r-lg)}
+@media (max-width:640px){
+  .conrow{gap:8px}
+  .consend{margin-left:auto}
+  .conopt{font-size:9px}
+}
 </style>
 
 <div class="wrap">
 <header class="masthead">
-  <h1>Analogy &amp; Application Graphs</h1>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+      <!-- A constellation: sparse points, a few joined. The graph in miniature. -->
+      <path d="M8 27 L15 12 L26 17 L33 9 M15 12 L21 28 M26 17 L21 28"
+        fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"
+        opacity=".55"/>
+      <circle cx="15" cy="12" r="3.4" fill="currentColor"/>
+      <circle cx="26" cy="17" r="2.6" fill="currentColor"/>
+      <circle cx="21" cy="28" r="2.2" fill="currentColor"/>
+      <circle cx="8" cy="27" r="1.8" fill="currentColor" opacity=".75"/>
+      <circle cx="33" cy="9" r="1.6" fill="currentColor" opacity=".6"/>
+    </svg>
+    <h1>Analogy &amp; Application Constellations</h1>
+    <div class="themes" role="group" aria-label="colour scheme">
+      <button id="th-light" aria-label="light"><svg viewBox="0 0 20 20"><circle cx="10"
+        cy="10" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><path
+        d="M10 1.5v2M10 16.5v2M1.5 10h2M16.5 10h2M4 4l1.4 1.4M14.6 14.6L16 16M16 4l-1.4 1.4M5.4 14.6L4 16"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button id="th-dark" aria-label="dark"><svg viewBox="0 0 20 20"><path
+        d="M16 11.5A6.5 6.5 0 0 1 8.5 4a6.5 6.5 0 1 0 7.5 7.5z" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
   <div class="eyebrow" id="eyebrow"></div>
 </header>
 
@@ -482,27 +593,38 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
     </div>
   </div>
   <div class="conrow">
-    <div class="conopts">
-      <label>model
-        <select id="seedprov">
-          <option value="muse">Muse Spark 1.3</option>
-          <option value="openai">GPT-5.6 Luna</option>
-          <option value="gemini">Gemini 3.8 Flash</option>
-        </select></label>
-      <label>how many adjacent fields to pull in
-        <select id="seedn">
-          <option>3</option><option selected>4</option><option>5</option>
-        </select></label>
-    </div>
-    <button id="seedgo" class="congo">form the analogy</button>
+    <button class="ghostbtn" id="histbtn" aria-expanded="false">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"
+        fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10 6v4.2l2.8 1.7"
+        fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span id="histlabel">Past generations</span>
+      <svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 8l4 4 4-4"
+        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round"/></svg>
+    </button>
+    <label class="conopt">model
+      <select id="seedprov">
+        <option value="muse">Muse Spark 1.3</option>
+        <option value="openai">GPT-5.6 Luna</option>
+        <option value="gemini">Gemini 3.8 Flash</option>
+      </select></label>
+    <label class="conopt">how many adjacent fields to pull in
+      <select id="seedn">
+        <option>3</option><option selected>4</option><option>5</option>
+        <option>6</option><option>7</option><option>8</option>
+        <option>9</option><option>10</option>
+      </select></label>
+    <button id="seedgo" class="consend" aria-label="form the analogy" title="form the analogy">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15.5V5M5.5 9.5L10 5l4.5 4.5"
+        fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+        stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div class="history" id="history" hidden>
+    <div class="seedbar" id="seedbar"></div>
+    <div class="modelbar" id="modelbar"></div>
   </div>
   <div class="constatus" id="seedstatus" hidden></div>
-</div>
-
-<div class="switchers">
-  <div class="seedbar" id="seedbar"></div>
-  <div class="modelbar" id="axisbar"></div>
-  <div class="modelbar" id="modelbar"></div>
 </div>
 
 <div class="figure"><svg id="sky" aria-label="Conceptual graph clusters"></svg></div>
@@ -587,7 +709,7 @@ const FLAG = {
   prediction:{text:"? prediction",color:"var(--flag-predict)"},
   attested:{text:"attested",color:"var(--ink-mute)"}
 };
-const W = 1420, H = 1060;
+const BASE_W = 1420, BASE_H = 1060;
 
 let ci = 0, D = null, hue = {}, byId = null, selected = null, sim = null;
 
@@ -622,7 +744,7 @@ function loadCorpus(i, keepSlot = false){
   const firstChain = D.domains.find(d => d.id !== "abstraction"
     && ((D.value_chains || {})[d.id] || (D.practice || {})[d.id]));
   if (firstChain) vcDom = firstChain.id;
-  renderHead(); renderSeedbar(); renderAxisbar(); renderModelbar();
+  renderHead(); renderSeedbar(); renderModelbar();
   renderMeta(); renderSky();
   renderPanel(); renderVC();
 }
@@ -636,46 +758,6 @@ function loadTopic(sid){
   const pool = onAxis.length ? onAxis : cands;
   const same = pool.find(c => c.provider === cur.provider);
   loadCorpus(CORPORA.indexOf(same || pool[0]));
-}
-
-function renderAxisbar(){
-  const cur = CORPORA[ci];
-  const el = document.getElementById("axisbar");
-  const runs = corporaFor(cur.seedId);
-  // The hand-authored reference has no second axis to offer, and saying so is more
-  // honest than hiding the control.
-  if (cur.byHand || runs.length === 1 && axesFor(cur.seedId).length === 1
-      && cur.axis === "structure" && !AXES.some(a => a.key === "practice"
-        && runsFor(cur.seedId, a.key).length)){
-    el.innerHTML = `<span class="mlabel">formed on</span>
-      <span class="seg"><button class="segbtn" aria-pressed="true" disabled>
-        structure<span class="segsub">what the systems are</span></button></span>
-      <span class="mhint">the practice axis has not been run on this seed</span>`;
-    return;
-  }
-  const hasMerged = runsFor(cur.seedId, "both").length > 0;
-  const segs = AXES.map(a => {
-    const rs = runsFor(cur.seedId, a.key);
-    // On a merged seed the halves were run — they are inside this graph, not absent.
-    if (!rs.length) return `<button class="segbtn" disabled aria-pressed="false">
-        ${a.label}<span class="segsub">${
-          hasMerged && a.key !== "both" ? "folded in" : "not run yet"}</span></button>`;
-    const on = a.key === cur.axis;
-    return `<button class="segbtn" aria-pressed="${on}" data-axis="${a.key}">
-        ${a.label}<span class="segsub">${a.sub}</span></button>`;
-  }).join("");
-  const a = AXES.find(x => x.key === cur.axis) || AXES[0];
-  el.innerHTML = `<span class="mlabel">formed on</span><span class="seg">${segs}</span>
-    <span class="mhint">${cur.axis === "both"
-      ? "the two axes are shown merged — a half is not a separate finding, it is this "
-        + "graph with half of it missing"
-      : a.blurb}</span>`;
-  el.querySelectorAll(".segbtn[data-axis]").forEach(b =>
-    b.addEventListener("click", () => {
-      const rs = runsFor(cur.seedId, b.dataset.axis);
-      const same = rs.find(r => r.provider === cur.provider) || rs[0];
-      if (same) loadCorpus(CORPORA.indexOf(same));
-    }));
 }
 
 function renderModelbar(){
@@ -771,6 +853,12 @@ function renderMeta(){
 
 function renderSky(){
   const vcNow = vcDom ? (D.value_chains || {})[vcDom] : null;
+  // Pass 3 costs one call per field, so more fields is only slower, never impossible.
+  // What runs out is room: the ring has to hold them all at a readable size, so the
+  // frame grows with the count.
+  const nDom = D.domains.filter(d => d.id !== "abstraction").length;
+  const GROW = Math.min(1.5, Math.max(1, Math.sqrt(nDom / 5)));
+  const W = Math.round(BASE_W * GROW), H = Math.round(BASE_H * GROW);
   const svg = d3.select("#sky").attr("viewBox", `0 0 ${W} ${H}`);
   svg.selectAll("*").remove();
   const stale = document.getElementById("nodepop");
@@ -778,13 +866,13 @@ function renderSky(){
   if (sim) sim.stop();
 
   const doms = D.domains;
-  const nDom = doms.filter(d => d.id !== "abstraction").length;
   // The middle holds two clusters, not one: what the correspondence SAYS and what
   // it MAKES. They are a pair -- the second exists only because of the first -- so
   // they sit side by side at the centre, with the fields ringed around them, and
   // each is a cluster like any other on this page.
   const PAIR = 252;                     // how far each sits off the middle
   window.__chc = [W / 2 + PAIR, H / 2]; // centre of the chain cluster
+  window.__wh = [W, H];
   const centres = {};
   const R = Math.min(W, H) * 0.355;
   let k = 0;
@@ -1845,7 +1933,45 @@ function renderPractice(pr, dc){
   document.getElementById("prboard").innerHTML = head + rows.join("") + foot;
 }
 
+
+/* ---- Theme, and the history drawer ------------------------------------- */
+/* Two skins on one structure. The choice is remembered per browser, and every
+   read and write is guarded: a private window or blocked site data must not stop
+   the page rendering. */
+const THKEY = "aac-theme";
+function setTheme(mode, save){
+  document.documentElement.setAttribute("data-theme", mode);
+  document.getElementById("th-light").setAttribute("aria-pressed", mode === "light");
+  document.getElementById("th-dark").setAttribute("aria-pressed", mode === "dark");
+  if (save){ try { localStorage.setItem(THKEY, mode); } catch (e) {} }
+  if (window.__markSelected) renderSky();
+}
+(function initTheme(){
+  let saved = null;
+  try { saved = localStorage.getItem(THKEY); } catch (e) {}
+  const mq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+  setTheme(saved || (mq && mq.matches ? "dark" : "light"), false);
+})();
+document.getElementById("th-light").addEventListener("click", () => setTheme("light", true));
+document.getElementById("th-dark").addEventListener("click", () => setTheme("dark", true));
+
+// Past generations live inside the box, closed. The console is the page; the
+// back catalogue is something you go and get.
+const histBtn = document.getElementById("histbtn");
+const histEl = document.getElementById("history");
+histBtn.addEventListener("click", () => {
+  const open = histEl.hidden;
+  histEl.hidden = !open;
+  histBtn.setAttribute("aria-expanded", String(open));
+});
+function histCount(){
+  const n = TOPICS.length;
+  document.getElementById("histlabel").textContent =
+    `Past generations · ${n}`;
+}
+
 loadCorpus(0);
+histCount();
 
 /* ---- The console ------------------------------------------------------- */
 /* Typing a seed here runs the real pipeline, but only when the page is being
@@ -1954,9 +2080,8 @@ async function poll(id){
 seedGo.addEventListener("click", runSeed);
 fetch("api/ping").then(r => r.ok && r.json()).then(j => {
   if (j && j.runner){
-    runLive = true;
-    seedGo.textContent = "form the analogy";
-    conEl.style.setProperty("--focus-live", "1");
+    runLive = true;                       // the box can run the passes for real
+    conEl.classList.add("live");
   }
 }).catch(() => {});
 </script>
