@@ -410,10 +410,10 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
   display:grid;gap:10px}
 /* The box has to be tall enough to hold the instructions, or they land on the
    controls below while the field is still empty. */
-.conwrap{position:relative;min-height:3.05em}
+.conwrap{position:relative;min-height:1.5em}
 #seedin{width:100%;resize:none;overflow:hidden;background:transparent;border:0;
   outline:none;font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);
-  line-height:1.4;color:var(--ink);padding:2px 0;min-height:2.95em;display:block}
+  line-height:1.4;color:var(--ink);padding:2px 0;min-height:1.45em;display:block}
 .conghost{position:absolute;inset:2px 0 auto 0;pointer-events:none;
   font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);line-height:1.4;
   color:var(--ink-mute);transition:opacity .25s ease;max-width:68ch}
@@ -588,8 +588,7 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);
     <textarea id="seedin" rows="1" spellcheck="false"
       aria-label="a topic to abstract and trace"></textarea>
     <div class="conghost" id="seedghost" aria-hidden="true">
-      <b>Name a topic.</b> A mechanism, a method, or a limit — something with a test
-      that could come out false.
+      Name a seed Topic, or Field or Method.
     </div>
   </div>
   <div class="conrow">
@@ -2000,7 +1999,7 @@ function conAdd(html, cls){
 function conTyping(){
   conEl.classList.toggle("typing", seedIn.value.trim().length >= 3);
   seedIn.style.height = "auto";
-  seedIn.style.height = Math.max(seedIn.scrollHeight, 44) + "px";
+  seedIn.style.height = Math.max(seedIn.scrollHeight, 30) + "px";
 }
 seedIn.addEventListener("input", conTyping);
 seedIn.addEventListener("keydown", e => {
