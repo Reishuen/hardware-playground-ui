@@ -411,10 +411,10 @@ h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em;color:var(--accent)}
   display:grid;gap:10px}
 /* The box has to be tall enough to hold the instructions, or they land on the
    controls below while the field is still empty. */
-.conwrap{position:relative;min-height:1.5em}
+.conwrap{position:relative;min-height:2.95em}
 #seedin{width:100%;resize:none;overflow:hidden;background:transparent;border:0;
   outline:none;font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);
-  line-height:1.4;color:var(--ink);padding:2px 0;min-height:1.45em;display:block}
+  line-height:1.4;color:var(--ink);padding:2px 0;min-height:2.9em;display:block}
 .conghost{position:absolute;inset:2px 0 auto 0;pointer-events:none;
   font-family:var(--serif);font-size:clamp(17px,2.3vw,21px);line-height:1.4;
   color:var(--ink-mute);transition:opacity .25s ease;max-width:68ch}
@@ -613,6 +613,41 @@ body.blank .console{margin-bottom:0}
 .hr-m{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-mute)}
 .histrow[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .histrow[aria-pressed="true"] .hr-t{color:var(--accent);font-weight:600}
+
+/* ---- The wait ----------------------------------------------------------
+   A run is six steps and tens of model calls, so the honest thing during it is
+   to say what is happening, how long it has taken and roughly how long it takes
+   — not a spinner that could mean anything. The constellation turns because the
+   page is otherwise still; it carries no information and is stopped outright
+   for anyone who asked for less motion. */
+.gen{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;
+  border-top:1px solid var(--rule-soft);padding-top:14px;margin-top:2px}
+.gen[hidden]{display:none}
+.genwheel{width:74px;height:74px;flex:none;color:var(--accent)}
+.gspin{transform-origin:60px 60px;animation:gspin 16s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
+.genwheel circle{animation:gpulse 2.6s ease-in-out infinite}
+.genwheel circle:nth-of-type(2){animation-delay:.4s}
+.genwheel circle:nth-of-type(3){animation-delay:.9s}
+.genwheel circle:nth-of-type(4){animation-delay:1.3s}
+.genwheel circle:nth-of-type(5){animation-delay:1.8s}
+@keyframes gpulse{0%,100%{opacity:.45}50%{opacity:1}}
+.genbody{display:grid;gap:7px;min-width:0}
+.genhead{display:flex;align-items:baseline;gap:10px}
+.genstep{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent)}
+.gentime{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--ink-soft);
+  font-variant-numeric:tabular-nums}
+.genthought{margin:0;font-family:var(--serif);font-size:14.5px;line-height:1.45;
+  color:var(--ink-soft)}
+.genbar{height:3px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.genbar span{display:block;height:100%;width:0;border-radius:999px;
+  background:var(--accent);transition:width .6s ease}
+.genmeta{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-mute)}
+@media (prefers-reduced-motion:reduce){
+  .gspin,.genwheel circle{animation:none}
+}
+@media (max-width:560px){.gen{grid-template-columns:1fr}.genwheel{display:none}}
 </style>
 
 <div class="wrap">
@@ -664,7 +699,8 @@ body.blank .console{margin-bottom:0}
     <textarea id="seedin" rows="1" spellcheck="false"
       aria-label="a topic to abstract and trace"></textarea>
     <div class="conghost" id="seedghost" aria-hidden="true">
-      Name your domain and your goal in it
+      Name your domain and your goal in it — e.g. “battery design: stop cells
+      degrading so fast when charged quickly”
     </div>
   </div>
   <div class="conrow">
@@ -687,18 +723,35 @@ body.blank .console{margin-bottom:0}
       <div class="histlist" id="seedbar"></div>
     </div>
     </span>
-    <label class="conopt">model
-      <select id="seedprov">
-        <option value="muse">Muse Spark 1.3</option>
-        <option value="openai">GPT-5.6 Luna</option>
-        <option value="gemini">Gemini 3.8 Flash</option>
-      </select></label>
-    <label class="conopt">how many adjacent fields to pull in
-      <select id="seedn">
-        <option>3</option><option selected>4</option><option>5</option>
-        <option>6</option><option>7</option><option>8</option>
-        <option>9</option><option>10</option>
-      </select></label>
+    <input type="hidden" id="seedprov" value="muse">
+    <input type="hidden" id="seedn" value="4">
+    <span class="histwrap">
+      <button class="ghostbtn" id="provbtn" aria-expanded="false">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path
+          d="M10 3.2l1.9 4.3 4.6.5-3.4 3.1.9 4.5L10 13.4l-4 2.2.9-4.5-3.4-3.1 4.6-.5z"
+          fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        <span id="provlabel">Muse Spark 1.3</span>
+        <svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 8l4 4 4-4"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round"/></svg>
+      </button>
+      <div class="histpop" id="provpop" hidden></div>
+    </span>
+    <span class="histwrap">
+      <button class="ghostbtn" id="nbtn" aria-expanded="false">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="6" cy="7" r="2"
+          fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="14" cy="6"
+          r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="10"
+          cy="14" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path
+          d="M7.7 8.6 L9 12M12.6 7.6 L11.2 12M8 7 L12 6.3" stroke="currentColor"
+          stroke-width="1.1" opacity=".6"/></svg>
+        <span id="nlabel">4 fields</span>
+        <svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 8l4 4 4-4"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round"/></svg>
+      </button>
+      <div class="histpop" id="npop" hidden></div>
+    </span>
     <input id="seedcode" class="concode" type="password" placeholder="code"
       autocomplete="off" aria-label="access code" hidden>
     <button id="seedgo" class="consend" aria-label="form the analogy" title="form the analogy">
@@ -706,6 +759,33 @@ body.blank .console{margin-bottom:0}
         fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
         stroke-linejoin="round"/></svg>
     </button>
+  </div>
+  <div class="gen" id="gen" hidden>
+    <svg class="genwheel" viewBox="0 0 120 120" aria-hidden="true">
+      <g class="gspin">
+        <g stroke="currentColor" stroke-width="1" fill="none" opacity=".35">
+          <path d="M60 22 L88 46 M88 46 L78 84 M78 84 L42 92 M42 92 L24 58 M24 58 L60 22
+                   M60 22 L78 84 M88 46 L42 92"/>
+        </g>
+        <g fill="currentColor">
+          <circle cx="60" cy="22" r="4.4"/><circle cx="88" cy="46" r="3.2"/>
+          <circle cx="78" cy="84" r="3.8" opacity=".85"/>
+          <circle cx="42" cy="92" r="2.8" opacity=".7"/>
+          <circle cx="24" cy="58" r="3.4" opacity=".8"/>
+        </g>
+      </g>
+      <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor"
+        stroke-width="1" opacity=".16"/>
+    </svg>
+    <div class="genbody">
+      <div class="genhead">
+        <span class="genstep" id="genstep">Starting</span>
+        <span class="gentime" id="gentime">0:00</span>
+      </div>
+      <p class="genthought" id="genthought"></p>
+      <div class="genbar"><span id="genfill"></span></div>
+      <div class="genmeta" id="genmeta"></div>
+    </div>
   </div>
   <div class="constatus" id="seedstatus" hidden></div>
 </div>
@@ -2021,6 +2101,7 @@ function closeHist(){
 histBtn.addEventListener("click", e => {
   e.stopPropagation();
   const open = histEl.hidden;
+  document.querySelectorAll(".histpop").forEach(o => { if (o !== histEl) o.hidden = true; });
   histEl.hidden = !open;
   histBtn.setAttribute("aria-expanded", String(open));
 });
@@ -2034,6 +2115,52 @@ function histCount(){
   document.getElementById("histlabel").textContent =
     `Past generations · ${n}`;
 }
+
+/* ---- The two pickers ---------------------------------------------------
+   Native selects looked like a form bolted to a chat box. These are the same
+   object as the history dropdown: a ghost button that opens a small list, the
+   current choice tinted. One builder, two menus. */
+function picker(btnId, popId, labelId, inputId, items, fmt){
+  const btn = document.getElementById(btnId), pop = document.getElementById(popId),
+        label = document.getElementById(labelId), input = document.getElementById(inputId);
+  function paint(){
+    label.textContent = fmt(input.value);
+    pop.innerHTML = items.map(it =>
+      `<button class="histrow" role="menuitemradio"
+         aria-pressed="${String(it.value) === String(input.value)}"
+         data-v="${it.value}"><span class="hr-t">${esc(it.label)}</span>${
+         it.note ? `<span class="hr-m">${esc(it.note)}</span>` : ""}</button>`).join("");
+    pop.querySelectorAll(".histrow").forEach(b => b.addEventListener("click", () => {
+      input.value = b.dataset.v; paint(); close();
+    }));
+  }
+  function close(){ pop.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    const open = pop.hidden;
+    document.querySelectorAll(".histpop").forEach(o => { if (o !== pop) o.hidden = true; });
+    pop.hidden = !open;
+    btn.setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("click", e => {
+    if (!pop.hidden && !pop.contains(e.target) && e.target !== btn) close();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+  paint();
+}
+
+picker("provbtn", "provpop", "provlabel", "seedprov", [
+  {value: "muse", label: "Muse Spark 1.3", note: "fast · the corpus was built on it"},
+  {value: "openai", label: "GPT-5.6 Luna", note: "most predictions per seed"},
+  {value: "gemini", label: "Gemini 3.8 Flash", note: "boldest maths · least reliable"},
+], v => ({muse: "Muse Spark 1.3", openai: "GPT-5.6 Luna",
+          gemini: "Gemini 3.8 Flash"}[v] || v));
+
+picker("nbtn", "npop", "nlabel", "seedn",
+  [3, 4, 5, 6, 7, 8, 9, 10].map(n => ({
+    value: n, label: `${n} adjacent fields`,
+    note: n <= 4 ? "quick" : n <= 6 ? "a fuller ring" : "slow — one model call per field",
+  })), v => `${v} fields`);
 
 /* ---- Blank first ------------------------------------------------------- */
 function setBlank(on){
@@ -2085,7 +2212,7 @@ function conAdd(html, cls){
 function conTyping(){
   conEl.classList.toggle("typing", seedIn.value.trim().length >= 3);
   seedIn.style.height = "auto";
-  seedIn.style.height = Math.max(seedIn.scrollHeight, 30) + "px";
+  seedIn.style.height = Math.max(seedIn.scrollHeight, 58) + "px";
 }
 seedIn.addEventListener("input", conTyping);
 seedIn.addEventListener("keydown", e => {
@@ -2140,10 +2267,85 @@ async function runSeed(){
     });
     const job = await res.json();
     if (job.error){ conSay(job.error, "err"); seedGo.disabled = false; return; }
+    genStart();
     poll(job.id);
   } catch (err){
+    genStop();
     conSay(`could not reach the runner: ${err.message}`, "err");
     seedGo.disabled = false;
+  }
+}
+
+/* What the harness prints, said in words. The log is for me; this is for whoever is
+   waiting. Timings are what runs on this corpus actually took, not a guess — they are
+   wide because the providers are wide. */
+const STEPS = [
+  {re: /passes 1–3 on structure|abstracting the structure/i, n: 1,
+   step: "Abstracting · structure",
+   say: "Breaking your goal into conceptual slots — what happens, what has to hold, "
+      + "the derived object, and an observation that could come out false."},
+  {re: /pass 2\/3/i, n: 1, step: "Retrieving fields",
+   say: "Looking for fields with the same structure. Your own domain's vocabulary is "
+      + "withheld, so a match has to be found on structure rather than on sounding alike."},
+  {re: /pass 3\/3\s+instantiating \+ attacking (.+)/i, n: 1, step: "Instantiating",
+   say: m => `Filling every slot for ${m[1].trim()}, then attacking the match to find `
+           + "where it breaks."},
+  {re: /passes 1–3 on practice|abstracting the practice/i, n: 2,
+   step: "Abstracting · practice",
+   say: "Now the other axis: what that community actually does, what it costs them, "
+      + "and the limits they work against."},
+  {re: /merging the two axes/i, n: 3, step: "Merging",
+   say: "Putting both abstractions in one lattice, bridged where their roles correspond."},
+  {re: /pass 4 ·|value chain/i, n: 4, step: "Tracing applications",
+   say: "Following each analogy downstream: what gets made, who makes it, and who it "
+      + "reaches at the end."},
+  {re: /pass 4b|bottleneck/i, n: 5, step: "Bottlenecks and demand",
+   say: "Asking what limits the part that already runs, and what the part that does "
+      + "not exist would serve."},
+  {re: /rebuilding the viewer/i, n: 6, step: "Drawing",
+   say: "Laying out the constellation."},
+];
+const GEN_TOTAL = 6;
+let genT0 = 0, genTimer = null;
+
+function genTick(){
+  const el = document.getElementById("gentime");
+  if (!el) return;
+  const s = Math.floor((Date.now() - genT0) / 1000);
+  el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function genStart(){
+  document.getElementById("gen").hidden = false;
+  document.getElementById("seedstatus").hidden = true;
+  genT0 = Date.now();
+  clearInterval(genTimer);
+  genTimer = setInterval(genTick, 1000);
+  genTick();
+  const n = +document.getElementById("seedn").value;
+  document.getElementById("genmeta").textContent =
+    `6 steps · both axes · ${n} fields each · usually 15–35 min, longer when the `
+    + `provider is busy`;
+  document.getElementById("genstep").textContent = "Starting";
+  document.getElementById("genthought").textContent =
+    "Sending the first pass. Nothing is retrieved yet.";
+  document.getElementById("genfill").style.width = "2%";
+}
+
+function genStop(){ clearInterval(genTimer); document.getElementById("gen").hidden = true; }
+
+function genUpdate(log){
+  for (let i = log.length - 1; i >= 0; i--){
+    for (const st of STEPS){
+      const m = log[i].match(st.re);
+      if (!m) continue;
+      document.getElementById("genstep").textContent = st.step;
+      document.getElementById("genthought").textContent =
+        typeof st.say === "function" ? st.say(m) : st.say;
+      document.getElementById("genfill").style.width =
+        `${Math.round((st.n / GEN_TOTAL) * 100)}%`;
+      return;
+    }
   }
 }
 
@@ -2151,6 +2353,7 @@ async function poll(id){
   try {
     const r = await fetch(`api/status?id=${encodeURIComponent(id)}`);
     const j = await r.json();
+    genUpdate(j.log || []);
     seedStatus.hidden = false;
     seedStatus.innerHTML = j.log.map(l =>
       `<span class="${/fail|error|Traceback|Rejected/i.test(l) ? "err" : ""}">${
@@ -2158,6 +2361,7 @@ async function poll(id){
     ).join("\n");
     seedStatus.scrollTop = seedStatus.scrollHeight;
     if (j.done){
+      genStop();
       seedGo.disabled = false;
       if (j.ok){
         conAdd(`\n✓ done — reloading the viewer with the new seed`, "ok");
