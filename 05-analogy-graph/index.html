@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Analogy Constellations</title>
+<title>Analogy &amp; Application Graphs</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -377,8 +377,9 @@ details.more .mb>p{margin:0}
 /* The whole page is a seed going in and a graph coming out. The box and the
    figure are the product; every paragraph on the page folds away behind a
    summary so neither has to compete with prose. */
-.masthead{gap:4px;padding-bottom:10px}
-h1{font-size:clamp(20px,2.6vw,27px)}
+.masthead{gap:5px;padding-bottom:12px}
+h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.02em}
+.eyebrow strong{color:var(--ink-soft);font-weight:600}
 .console{margin:6px 0 14px;background:var(--surface);border:1px solid var(--rule);
   border-radius:3px;border-top:3px solid var(--focus);padding:14px 16px 12px;
   display:grid;gap:10px}
@@ -465,8 +466,8 @@ h1{font-size:clamp(20px,2.6vw,27px)}
 
 <div class="wrap">
 <header class="masthead">
-  <div class="eyebrow" id="eyebrow">Analogy constellations</div>
-  <h1 id="title">Analogy Constellations</h1>
+  <h1>Analogy &amp; Application Graphs</h1>
+  <div class="eyebrow" id="eyebrow"></div>
 </header>
 
 <!-- The console. A seed goes in here and a graph comes out; everything else on the
@@ -707,10 +708,11 @@ function renderModelbar(){
 
 function renderHead(){
   const c = CORPORA[ci];
-  document.getElementById("eyebrow").textContent =
-    `${c.id} · ${(c.domain || "").replace(/_/g," ")} · formed on ${c.axis}`
-    + ` · ${D.nodes.length} nodes`;
-  document.getElementById("title").textContent = c.title;
+  const fields = D.domains.length - 1;
+  document.getElementById("eyebrow").innerHTML =
+    `showing <strong>${esc(c.short)}</strong>`
+    + ` · ${(c.domain || "").replace(/_/g, " ")}`
+    + ` · formed on ${c.axis} · ${fields} fields · ${D.nodes.length} nodes`;
   document.getElementById("standfirst").innerHTML = c.blurb;
 }
 
